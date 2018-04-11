@@ -4,13 +4,12 @@ from math import degrees, pi, radians
 
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
-from mojo.roboFont import RGlyph
 
 # RoboFont-internal packages
 from lib.tools.extremePoints import ExtremePointPen
 from mojo.drawingTools import *
 from mojo.events import addObserver, removeObserver
-from mojo.roboFont import CurrentFont, CurrentGlyph
+from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.UI import UpdateCurrentGlyphView
 
 from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, def_local_key, def_guide_key, def_super_key, def_model_key, rf_guide_key
@@ -228,7 +227,7 @@ class JKNib(BaseWindowController):
 		if self.font is None:
 			self.font_layers = []
 		else:
-			self.font_layers = ["foreground"] + self.font.layerOrder
+			self.font_layers = self.font.layerOrder
 		self.w.guide_select.setItems(self.font_layers)
 		if self.font_layers:
 			last_layer = len(self.font_layers) - 1
@@ -376,7 +375,7 @@ class JKNib(BaseWindowController):
 			self.save_settings()
 		self.glyph = notification["glyph"]
 		self.font = CurrentFont()
-		self.font_layers = ["foreground"] + self.font.layerOrder
+		self.font_layers = self.font.layerOrder
 		#print(self.font)
 		if self.glyph is not None:
 			self.load_settings()
