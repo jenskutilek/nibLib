@@ -2,7 +2,10 @@ from __future__ import division, print_function
 
 from math import cos, pi, sin
 
-from mojo.drawingTools import *
+try:
+	from mojo.drawingTools import *
+except ImportError:
+	from GlyphsApp.drawingTools import *
 
 from nibLib.pens.nibPen import NibPen
 

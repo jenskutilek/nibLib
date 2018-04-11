@@ -3,7 +3,10 @@ from __future__ import division, print_function
 from math import cos, degrees, pi, sin
 import operator
 
-from mojo.drawingTools import *
+try:
+	from mojo.drawingTools import *
+except ImportError:
+	from GlyphsApp.drawingTools import *
 
 from nibLib.geometry import optimizePointPath
 from nibLib.pens.ovalNibPen import OvalNibPen

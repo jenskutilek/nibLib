@@ -3,7 +3,10 @@ from __future__ import division, print_function
 
 from math import atan2, cos, degrees, sin, tan
 
-from mojo.drawingTools import *
+try:
+	from mojo.drawingTools import *
+except ImportError:
+	from GlyphsApp.drawingTools import *
 
 from nibLib import DEBUG_CENTER_POINTS, DEBUG_CURVE_POINTS
 from nibLib.geometry import angleBetweenPoints, getPointsFromCurve, optimizePointPath
