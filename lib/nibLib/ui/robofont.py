@@ -328,7 +328,7 @@ class JKNib(BaseWindowController):
 			self._update_layers()
 			return
 		guide_glyph = CurrentGlyph().getLayer(self.guide_layer)
-		glyph = guide_glyph.getRepresentation(rf_guide_key, angle=self.angle)
+		glyph = guide_glyph.getRepresentation(rf_guide_key, font=guide_glyph.font, angle=self.angle)
 		p = self.nib_pen(self.font, self.angle, self.width, self.height, self._draw_nib_faces, nib_superness=self.superness, trace=True)
 		glyph.draw(p)
 		p.trace_path(CurrentGlyph())
