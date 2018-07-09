@@ -392,12 +392,11 @@ class JKNib(BaseWindowController):
 				font_or_glyph.lib[libkey] = value
 	
 	def load_from_lib(self, font_or_glyph, libkey, attr=None):
-		if font_or_glyph is None:
+		if font_or_glyph is None or attr is None:
 			return False
-		value = font_or_glyph.lib.get(libkey, None)
-		if attr is not None:
-			if value is not None:
-				setattr(self, attr, value)
+		value = font_or_glyph.lib[libkey] if libkey in font_or_glyph.lib else None
+		if value is not None:
+			setattr(self, attr, value)
 		return value
 	
 	def save_settings(self):
