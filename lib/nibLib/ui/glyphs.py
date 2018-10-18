@@ -4,58 +4,19 @@ from math import degrees, pi, radians
 
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
-from robofab.world import CurrentFont, CurrentGlyph, RGlyph
 
 from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, def_local_key, def_guide_key, def_super_key, def_model_key, rf_guide_key
 from nibLib.pens import nib_models
 
 
-
-
-#def NibGuideGlyphFactory(glyph, font, angle):
-#	pen = ExtremePointPen(vertical = True, horizontal = True)
-#	g = RGlyph(glyph).copy()
-#	g.rotateBy(degrees(-angle))
-#	#g.extremePoints()
-#	g.drawPoints(pen)
-#	g.clear()
-#	out_pen = g.getPointPen()
-#	pen.drawPoints(out_pen)
-#	g.rotateBy(degrees(angle))
-#	return g
-#
-#
-#
-#def _registerFactory():
-#	# From https://github.com/typesupply/glyph-nanny/blob/master/Glyph%20Nanny.roboFontExt/lib/glyphNanny.py
-#	# always register if debugging
-#	# otherwise only register if it isn't registered
-#	from defcon import registerRepresentationFactory, Glyph
-#	if DEBUG:
-#		if rf_guide_key in Glyph.representationFactories:
-#			for font in AllFonts():
-#				for glyph in font:
-#					glyph.naked().destroyAllRepresentations()
-#		registerRepresentationFactory(xxrf_guide_key, NibGuideGlyphFactory)
-#	else:
-#		if rf_guide_key not in Glyph.representationFactories:
-#			registerRepresentationFactory(Glyph, rf_guide_key, NibGuideGlyphFactory)
-#
-#
-#
-#def _unregisterFactory():
-#	from defcon import unregisterRepresentationFactory, Glyph
-#	try:
-#		unregisterRepresentationFactory(Glyph, rf_guide_key)
-#	except:
-#		pass
-
+def UpdateCurrentGlyphView():
+	pass
 
 
 
 class JKNib(BaseWindowController):
 	
-	def __init__(self):
+	def __init__(self, glyph, font):
 		self.model = "Superellipse"
 		self.angle  = radians(30)
 		self.width  = 60
@@ -68,12 +29,8 @@ class JKNib(BaseWindowController):
 		self._draw_nib_faces = False
 		self._draw_in_preview_mode = False
 		
-		self.glyph = CurrentGlyph()
-		self.font = CurrentFont()
-		if self.font is None:
-			self.font_layers = []
-		else:
-			self.font_layers = self.font.layerOrder
+		self.glyph = glyph
+		self.font = font
 		
 		# window dimensions
 		width = 300
@@ -181,42 +138,48 @@ class JKNib(BaseWindowController):
 			callback = self._trace_callback
 		)
 		
-		#self.observers = [
-		#	("_preview", "drawBackground"),
-		#	("_preview", "drawInactive"),
-		#	("_previewFull", "drawPreview"),
-		#	("_glyph_changed", "currentGlyphChanged"),
-		#	("_font_changed", "fontBecameCurrent"),
-		#	("_font_resign", "fontResignCurrent"),
-		#]
+		self.observers = [
+			("_preview", "drawBackground"),
+			("_preview", "drawInactive"),
+			("_previewFull", "drawPreview"),
+			("_glyph_changed", "currentGlyphChanged"),
+			("_font_changed", "fontBecameCurrent"),
+			("_font_resign", "fontResignCurrent"),
+		]
 		
-		#self.setUpBaseWindowBehavior()
-		#self.addObservers()
-		#_registerFactory()
-		self.load_settings()
+		self.envSpecificInit()
+		self._update_layers()
 		#self._update_ui()
 		#self.w.trace_outline.enable(False)
 		self.w.open()
-		#UpdateCurrentGlyphView()
+		UpdateCurrentGlyphView()
+
+	def envSpecificInit(self):
+		pass
 	
 	def windowCloseCallback(self, sender):
 		if self.font is not None:
 			self.save_settings()
-		#self.removeObservers()
-		#_unregisterFactory()
-		#UpdateCurrentGlyphView()
+		self.envSpecificQuit()
 		super(JKNib, self).windowCloseCallback(sender)
+		UpdateCurrentGlyphView()
+	
+	def envSpecificQuit(self):
+		pass
 	
 	def _update_layers(self):
 		if self.font is None:
 			self.font_layers = []
 		else:
-			self.font_layers = self.font.layerOrder
+			self.font_layers = self.getLayerList()
 		self.w.guide_select.setItems(self.font_layers)
 		if self.font_layers:
 			last_layer = len(self.font_layers) - 1
 			self.w.guide_select.set(last_layer)
 			self.guide_layer = self.font_layers[last_layer]
+	
+	def getLayerList(self):
+		return []
 	
 	def _update_ui(self):
 		#print("_update_ui")
@@ -293,11 +256,7 @@ class JKNib(BaseWindowController):
 			self.load_settings()
 	
 	def _draw_space_callback(self, sender):
-		value = sender.get()
-		if value:
-			addObserver(self, "_previewFull", "spaceCenterDraw")
-		else:
-			removeObserver(self, "spaceCenterDraw")
+		pass
 	
 	def _draw_preview_callback(self, sender):
 		self._draw_in_preview_mode = sender.get()
@@ -306,16 +265,20 @@ class JKNib(BaseWindowController):
 	def _draw_faces_callback(self, sender):
 		self._draw_nib_faces = sender.get()
 		UpdateCurrentGlyphView()
+
+	def get_guide_representation(self, glyph, font, angle):
+		# TODO: Rotate, add extreme points, rotate back
+		return glyph.copy()
 	
 	def _trace_callback(self, sender):
 		if self.guide_layer is None:
 			self._update_layers()
 			return
-		guide_glyph = CurrentGlyph().getLayer(self.guide_layer)
-		glyph = guide_glyph.getRepresentation(rf_guide_key, angle=self.angle)
+		guide_glyph = self.glyph.getLayer(self.guide_layer)
+		glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
 		p = self.nib_pen(self.font, self.angle, self.width, self.height, self._draw_nib_faces, nib_superness=self.superness, trace=True)
 		glyph.draw(p)
-		p.trace_path(CurrentGlyph())
+		p.trace_path(self.glyph)
 	
 	def _setup_draw(self, preview=False):
 		if preview:
@@ -329,60 +292,24 @@ class JKNib(BaseWindowController):
 		strokeWidth(0)
 		stroke(None)
 		lineJoin(self.line_join)
-	
-	def _draw_preview(self, notification, preview=False):
+
+	def _draw_preview_glyph(self, preview=False):
 		if self.guide_layer is None:
 			self._update_layers()
 			return
-		#try:
-		guide_glyph = notification["glyph"].getLayer(self.guide_layer)
-		glyph = guide_glyph.getRepresentation(rf_guide_key, font=guide_glyph.font, angle=self.angle)
+		glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
 		save()
 		self._setup_draw(preview=preview)
 		# TODO: Reuse pen object. Needs modifications to the pens before possible.
 		p = self.nib_pen(self.font, self.angle, self.width, self.height, self._draw_nib_faces, nib_superness=self.superness)
 		glyph.draw(p)
 		restore()
-		#except:
-		#    pass
-	
-	def _preview(self, notification):
-		self._draw_preview(notification, False)
-	
-	def _previewFull(self, notification):
-		if self._draw_in_preview_mode:
-			self._draw_preview(notification, True)
-	
-	def _glyph_changed(self, notification):
-		#print("Glyph changed")
-		if self.glyph is not None:
-			self.save_settings()
-		self.glyph = notification["glyph"]
-		self.font = CurrentFont()
-		self.font_layers = self.font.layerOrder
-		#print(self.font)
-		if self.glyph is not None:
-			self.load_settings()
-	
+
 	def save_to_lib(self, font_or_glyph, libkey, value):
-		if value is None:
-			if libkey in font_or_glyph.lib:
-				del font_or_glyph.lib[libkey]
-		else:
-			if libkey in font_or_glyph.lib:
-				if font_or_glyph.lib[libkey] != value:
-					font_or_glyph.lib[libkey] = value
-			else:
-				font_or_glyph.lib[libkey] = value
+		pass
 	
 	def load_from_lib(self, font_or_glyph, libkey, attr=None):
-		if font_or_glyph is None:
-			return False
-		value = font_or_glyph.lib.get(libkey, None)
-		if attr is not None:
-			if value is not None:
-				setattr(self, attr, value)
-		return value
+		pass
 	
 	def save_settings(self):
 		has_local_settings = self.w.glyph_local.get()
@@ -442,12 +369,54 @@ class JKNib(BaseWindowController):
 				self.load_from_lib(self.font, setting, attr)
 		self._update_ui()
 	
-	def _font_resign(self, notification=None):
-		self.save_settings()
 	
-	def _font_changed(self, notification):
-		self.font = notification["font"]
-		if self.font is None:
-			self.font_layers = []
+
+
+
+
+class JKNibGlyphs(JKNib):
+
+	user_data_attr = "userData"
+
+	def __init__(self, layer, font):
+		super(JKNibGlyphs, self).__init__(layer, font)
+
+	def envSpecificInit(self):
+		pass
+
+	def envSpecificQuit(self):
+		pass
+	
+	def getLayerList(self):
+		return [layer.name for layer in self.glyph.parent.layers]
+
+	def save_to_lib(self, font_or_glyph, libkey, value):
+		if value is None:
+			if font_or_glyph.userData and libkey in font_or_glyph.userData:
+				del font_or_glyph.userData[libkey]
 		else:
-			self.font_layers = self.font.layerOrder
+			if font_or_glyph.userData and libkey in font_or_glyph.userData:
+				if font_or_glyph.userData[libkey] != value:
+					font_or_glyph.userData[libkey] = value
+			else:
+				font_or_glyph.userData[libkey] = value
+	
+	def load_from_lib(self, font_or_glyph, libkey, attr=None):
+		if font_or_glyph is None:
+			return False
+		value = font_or_glyph.userData.get(libkey, None)
+		if attr is not None:
+			if value is not None:
+				setattr(self, attr, value)
+		return value
+	
+	
+	
+	
+	
+	
+
+
+
+if __name__ == "__main__":
+	JKNibGlyphs(Layer, Font)
