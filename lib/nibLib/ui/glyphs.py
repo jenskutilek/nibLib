@@ -14,6 +14,9 @@ def UpdateCurrentGlyphView():
 
 
 
+### This is development code, copy it to __init__.py after editing
+
+
 class JKNib(BaseWindowController):
 	
 	def __init__(self, glyph, font):
@@ -372,6 +375,8 @@ class JKNib(BaseWindowController):
 	
 
 
+
+### This is the Glyphs-specific code, it should stay here.
 
 
 class JKNibGlyphs(JKNib):
