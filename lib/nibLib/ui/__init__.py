@@ -30,10 +30,6 @@ class JKNib(BaseWindowController):
 		
 		self.glyph = glyph
 		self.font = font
-		if self.font is None:
-			self.font_layers = []
-		else:
-			self.font_layers = self.getLayerList()
 		
 		# window dimensions
 		width = 300
@@ -151,6 +147,7 @@ class JKNib(BaseWindowController):
 		]
 		
 		self.envSpecificInit()
+		self._update_layers()
 		#self._update_ui()
 		#self.w.trace_outline.enable(False)
 		self.w.open()
