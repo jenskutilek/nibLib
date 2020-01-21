@@ -1,13 +1,12 @@
-from __future__ import division
 import cmath
 
-#a = 300
-#b = 200
+# a = 300
+# b = 200
 
-#phi = radians(45)
-#alpha = 30
+# phi = radians(45)
+# alpha = 30
 
-#nib_angle = 5
+# nib_angle = 5
 
 Variable([
     dict(name="a", ui="Slider",
@@ -63,13 +62,13 @@ class Triangle(object):
         self.A = A
         self.B = B
         self.C = C
-    
+
     def sides(self):
         self.a = distanceBetweenPoints(self.B, self.C)
         self.b = distanceBetweenPoints(self.A, self.C)
         self.c = distanceBetweenPoints(self.A, self.B)
         return self.a, self.b, self.c
-    
+
     def height_a(self):
         a, b, c = self.sides()
         s = (a + b + c) / 2
@@ -78,7 +77,7 @@ class Triangle(object):
 
 
 def optimizePointPath(p, dist=0.49):
-    print "Input number of points:", len(p)
+    print("Input number of points:", len(p))
     num_points = len(p)
     p0 = p[0]
     optimized = [p0]
@@ -89,19 +88,19 @@ def optimizePointPath(p, dist=0.49):
         p2 = p[i+2]
         t = Triangle(p0, p2, p1)
         h = t.height_a()
-        #print i, h
+        # print(i, h)
         if t.height_a() > dist:
             optimized.extend([p1])
             p0 = p[i]
         else:
             pass
-            #print "Skip:", i+1, p1
+            # print("Skip:", i+1, p1)
         i += 1
         j += 1
-        #if j > 13:
-        #    break
+        # if j > 13:
+        #     break
     optimized.extend([p[-1]])
-    print "Optimized number of points:", len(optimized)
+    print("Optimized number of points:", len(optimized))
     return optimized
 
 
@@ -116,12 +115,11 @@ def get_superellipse_points(a, b, n, alpha=0, steps=100):
     try:
         points = optimizePointPath(points, 1)
     except:
-        print "oops"
+        print("oops")
         pass
     points.extend([(-p[0], p[1]) for p in reversed(points)])
     points.extend([(-p[0], -p[1]) for p in reversed(points)])
     return points
-    
 
 def superellipse(a, b, n, alpha, steps=100):
     points = get_superellipse_points(a, b, n, 0, steps)
@@ -135,56 +133,54 @@ def superellipse(a, b, n, alpha, steps=100):
     drawPath()
     restore()
 
-#def _get_point_on_ellipse_at_tangent_angle(a, b, alpha):
-#    
-#    phi = atan2(
-#        - b,
-#        a * tan(alpha)
-#    )
-#    
-#    x = a * cos(phi)
-#    y = b * sin(phi)
-#    
-#    return x, y   
-
+# def _get_point_on_ellipse_at_tangent_angle(a, b, alpha):
+#
+#     phi = atan2(
+#         - b,
+#         a * tan(alpha)
+#     )
+#
+#     x = a * cos(phi)
+#     y = b * sin(phi)
+#
+#     return x, y
 
 def _get_point_on_superellipse_at_tangent_angle(a, b, n, alpha):
-    
-    print "a =", a
-    print "b =", b
-    
+
+    print("a =", a)
+    print("b =", b)
+
     exp = 1 / (2 - 2 / n) + 0j
-    print "Exponent:", exp
-    
-    
+    print("Exponent:", exp)
+
     factor1 = (-b / a) ** -exp
     factor2 = cmath.tan(alpha) ** exp
-    print "factor1 =", factor1
-    print "factor2 =", factor2
+    print("factor1 =", factor1)
+    print("factor2 =", factor2)
     phi = atan2(
         1,
         (factor1 * factor2).real,
     )
-    
-    print "phi =", degrees(phi)
-    
-    
+
+    print("phi =", degrees(phi))
+
     return _get_point_on_superellipse_at_angle_from_center(a, b, n, phi)
 
 
 def _get_point_on_superellipse_at_angle_from_center(a, b, n, phi):
-    
+
     x = a * cos(phi) ** (2 / n + 0j)
     y = b * sin(phi) ** (2 / n + 0j)
-    
-    print x, y
-    
+
+    print(x, y)
+
     return x.real, y.real
 
 
 def draw_arrowhead(size=10, x=0, y=0):
     line((x-size, y+size), (x, y))
     line((x, y), (x-size, y-size))
+
 
 def draw_cross(size=10, x=0, y=0, phi=45):
     save()
@@ -193,7 +189,8 @@ def draw_cross(size=10, x=0, y=0, phi=45):
     line((x+size, y+size), (x-size, y-size))
     restore()
 
-print "Superellipse with n = %0.2f" % n
+
+print("Superellipse with n = %0.2f" % n)
 
 newDrawing()
 size(1000, 1000)
@@ -225,19 +222,19 @@ restore()
 
 stroke(0, 0, 1)
 x, y = _get_point_on_superellipse_at_tangent_angle(a, b, n, alpha - nib_angle)
-print x, y
+print(x, y)
 save()
 stroke(0,1,0)
 rotate(degrees(nib_angle))
 line((0, 0), (x, y))
 rect(x-1, y-1, 2, 2)
 restore()
-#print "Nib angle:", degrees(nib_angle)
+# print("Nib angle:", degrees(nib_angle))
 
 # Calculate the un-transformed point coordinates
 xnew = x * cos(nib_angle) - y * sin(nib_angle)
 ynew = x * sin(nib_angle) + y * cos(nib_angle)
-#print xnew, ynew
+# print(xnew, ynew)
 
 line((0, 0), (xnew, ynew))
 rect(xnew-1, ynew-1, 2, 2)
