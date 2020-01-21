@@ -20,7 +20,7 @@ Nib simulation library for font editors (well, RoboFont at the moment).
 
 Put the folder `nibLib` from `lib` somewhere RoboFont can import Python modules from, e.g. `~/Library/Application Support/RoboFont/external_packages`.
 
-Open the script `NibLibRF.py` in RoboFont’s macro panel and run it.
+Open the script `NibLibRF.py` in RoboFont’s macro panel and run it. NibLib will use any path in the bottom-most layer as a guide path.
 
 ## Known bugs
 
