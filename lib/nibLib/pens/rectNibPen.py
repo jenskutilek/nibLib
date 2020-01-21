@@ -50,7 +50,8 @@ class RectNibPen(NibPen):
         lineTo(b3)
         lineTo(b4)
         closePath()
-        drawPath()
+        if not self.trace:
+            drawPath()
 
         if self.trace:
             self.path.append([(b1), (b2), (b3), (b4)])
@@ -63,7 +64,8 @@ class RectNibPen(NibPen):
         lineTo(r3)
         lineTo(r4)
         closePath()
-        drawPath()
+        if not self.trace:
+            drawPath()
 
         if self.trace:
             self.path.append([(r1), (r2), (r3), (r4)])
@@ -76,7 +78,8 @@ class RectNibPen(NibPen):
         lineTo(b2)
         lineTo(b1)
         closePath()
-        drawPath()
+        if not self.trace:
+            drawPath()
 
         if self.trace:
             self.path.append([(r1), (r2), (b2), (b1)])
@@ -92,7 +95,8 @@ class RectNibPen(NibPen):
         lineTo(r4)
         lineTo(b4)
         closePath()
-        drawPath()
+        if not self.trace:
+            drawPath()
 
         if self.trace:
             self.path.append([(b1), (r1), (r4), (b4)])
