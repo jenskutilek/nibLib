@@ -53,7 +53,8 @@ class OvalNibPen(RectNibPen):
     def _moveTo(self, pt):
         self.__currentPoint = pt
         self.contourStart = pt
-        self._draw_nib_face(pt)
+        if not self.trace:
+            self._draw_nib_face(pt)
 
     def _lineTo(self, pt):
 
@@ -85,9 +86,13 @@ class OvalNibPen(RectNibPen):
         lineTo(p2)
         lineTo(p3)
         closePath()
-        drawPath()
-        if self.trace: self.path.append([(p0), (p1), (p2), (p3)])
-        self._draw_nib_face(pt)
+
+        if self.trace:
+            self.path.append([(p0), (p1), (p2), (p3)])
+        else:
+            drawPath()
+            self._draw_nib_face(pt)
+
         self.__currentPoint = pt
 
     def _curveToOne(self, pt1, pt2, pt3):
@@ -163,8 +168,8 @@ class OvalNibPen(RectNibPen):
                 self.path.append(optimizePointPath(outer + inner, 1))
             else:
                 drawPath()
+                self._draw_nib_face(pt3)
 
-        self._draw_nib_face(pt3)
         self.__currentPoint = pt3
 
     def _closePath(self):
