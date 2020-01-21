@@ -8,7 +8,7 @@ from nibLib.pens.superellipseNibPen import SuperellipseNibPen
 
 
 nib_models = {
-	"Superellipse": SuperellipseNibPen,
-	"Oval"        : OvalNibPen,
-	"Rectangle"   : RectNibPen,
+    "Superellipse": SuperellipseNibPen,
+    "Oval"        : OvalNibPen,
+    "Rectangle"   : RectNibPen,
 }
