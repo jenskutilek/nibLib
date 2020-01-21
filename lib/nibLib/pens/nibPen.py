@@ -2,11 +2,17 @@ from __future__ import division, print_function
 
 from fontTools.pens.basePen import BasePen
 
-
+try:
+    from mojo.drawingTools import stroke, strokeWidth
+except ImportError:
+    from GlyphsApp.drawingTools import stroke, strokeWidth
 
 
 class NibPen(BasePen):
-    def __init__(self, glyphSet, angle, width, height, show_nib_faces=False, alpha=0.2, nib_superness=2.5, trace=False):
+    def __init__(
+        self, glyphSet, angle, width, height, show_nib_faces=False, alpha=0.2,
+        nib_superness=2.5, trace=False
+    ):
         BasePen.__init__(self, glyphSet)
         self.angle = angle
         self.width = width
@@ -18,28 +24,28 @@ class NibPen(BasePen):
         self.alpha = alpha
         self.nib_superness = nib_superness
         self.trace = trace
-        
+
         # Initialize the nib face path
         # This is only needed for more complex shapes
         self.setup_nib()
-        
+
         self.path = []
-        
+
         self.__currentPoint = None
         if self.color:
             stroke(0, 0, 0, 0.5)
             strokeWidth(0.1)
-    
+
     def setup_nib(self):
         pass
-    
+
     def addComponent(self, baseName, transformation):
         pass
-    
+
     # unused
-    #def draw(self):
-    #    drawPath()
-    
+    # def draw(self):
+    #     drawPath()
+
     def trace_path(self, out_glyph):
         from mojo.roboFont import RGlyph
         tmp = RGlyph()
@@ -78,7 +84,7 @@ class NibPen(BasePen):
                             int(round(segment[2][1]))
                         ),
                     )
-        
+
                 else:
                     print("Unknown segment type:", segment)
         p.closePath()
