@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="n" format="2">
+  <advance width="680"/>
+  <outline>
+    <contour>
+      <point x="263" y="536" type="move"/>
+      <point x="402" y="98" type="line"/>
+    </contour>
+  </outline>
+</glyph>

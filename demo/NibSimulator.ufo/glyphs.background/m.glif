@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="m" format="2">
+  <advance width="680"/>
+  <outline>
+    <contour>
+      <point x="210" y="79" type="move"/>
+      <point x="255" y="114"/>
+      <point x="285" y="190"/>
+      <point x="232" y="256" type="curve"/>
+    </contour>
+    <contour>
+      <point x="310" y="79" type="move"/>
+      <point x="355" y="114"/>
+      <point x="385" y="190"/>
+      <point x="332" y="256" type="curve"/>
+    </contour>
+  </outline>
+</glyph>

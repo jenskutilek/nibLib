@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<glyph name="ccedilla" format="2">
+  <advance width="500"/>
+  <outline>
+    <contour>
+      <point x="418" y="405" type="move"/>
+      <point x="418" y="493" type="line"/>
+      <point x="301" y="493" type="line" smooth="yes"/>
+      <point x="190" y="493"/>
+      <point x="94" y="379"/>
+      <point x="73" y="238" type="curve" smooth="yes"/>
+      <point x="52" y="99"/>
+      <point x="110" y="6"/>
+      <point x="195" y="6" type="curve" smooth="yes"/>
+      <point x="281" y="6"/>
+      <point x="335" y="42"/>
+      <point x="375" y="79" type="curve"/>
+    </contour>
+  </outline>
+</glyph>

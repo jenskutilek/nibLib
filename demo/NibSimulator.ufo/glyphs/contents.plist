@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>c</key>
+	<string>c.glif</string>
+	<key>ccedilla</key>
+	<string>ccedilla.glif</string>
+	<key>l</key>
+	<string>l.glif</string>
+	<key>m</key>
+	<string>m.glif</string>
+	<key>n</key>
+	<string>n.glif</string>
+	<key>o</key>
+	<string>o.glif</string>
+	<key>ograve</key>
+	<string>ograve.glif</string>
+</dict>
+</plist>
