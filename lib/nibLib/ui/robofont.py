@@ -74,6 +74,8 @@ class JKNibRoboFont(JKNib):
         self.setUpBaseWindowBehavior()
         self.addObservers()
         _registerFactory()
+        self._update_layers()
+        self.load_settings()
         self._update_current_glyph_view()
 
     def envSpecificQuit(self):
@@ -203,10 +205,12 @@ class JKNibRoboFont(JKNib):
                 font_or_glyph.lib[libkey] = value
 
     def load_from_lib(self, font_or_glyph, libkey, attr=None):
-        if font_or_glyph is None or attr is None:
+        if font_or_glyph is None:
             return False
-        value = font_or_glyph.lib[libkey] if libkey in font_or_glyph.lib else None
-        if value is not None:
+        value = font_or_glyph.lib.get(libkey, None)
+        if value is None:
+            return False
+        if attr is not None:
             setattr(self, attr, value)
         return value
 

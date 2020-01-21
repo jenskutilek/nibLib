@@ -148,8 +148,6 @@ class JKNib(BaseWindowController):
         )
 
         self.envSpecificInit()
-        self._update_layers()
-        self.load_settings()
         # self._update_ui()
         # self.w.trace_outline.enable(False)
         self.w.open()
@@ -350,7 +348,11 @@ class JKNib(BaseWindowController):
         if has_local_settings:
             # print("Loading settings from glyph", self.glyph)
             self.w.glyph_local.set(True)
-            self.angle = radians(self.load_from_lib(self.glyph, def_angle_key))
+            angle = self.load_from_lib(self.glyph, def_angle_key)
+            if angle is None:
+                self.angle = 0
+            else:
+                self.angle = radians(angle)
             for setting, attr in [
                 (def_width_key, "width"),
                 (def_height_key, "height"),
@@ -363,7 +365,9 @@ class JKNib(BaseWindowController):
             # print("Loading settings from font", self.font)
             self.w.glyph_local.set(False)
             angle = self.load_from_lib(self.font, def_angle_key)
-            if angle is not None:
+            if angle is None:
+                self.angle = 0
+            else:
                 self.angle = radians(angle)
             for setting, attr in [
                 (def_width_key, "width"),
