@@ -38,7 +38,11 @@ def _registerFactory():
         registerRepresentationFactory(rf_guide_key, NibGuideGlyphFactory)
     else:
         if rf_guide_key not in Glyph.representationFactories:
-            registerRepresentationFactory(Glyph, rf_guide_key, NibGuideGlyphFactory)
+            registerRepresentationFactory(
+                Glyph,
+                rf_guide_key,
+                NibGuideGlyphFactory
+            )
 
 
 def _unregisterFactory():
@@ -87,7 +91,7 @@ class JKNibRoboFont(JKNib):
             removeObserver(self, "spaceCenterDraw")
 
     def get_guide_representation(self, glyph, font, angle):
-        return self.glyph.getLayer(
+        return glyph.getLayer(
             self.guide_layer
         ).getRepresentation(
             rf_guide_key, font=font, angle=angle
@@ -98,8 +102,20 @@ class JKNibRoboFont(JKNib):
             self._update_layers()
             return
         guide_glyph = self.glyph.getLayer(self.guide_layer)
-        glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
-        p = self.nib_pen(self.font, self.angle, self.width, self.height, self._draw_nib_faces, nib_superness=self.superness, trace=True)
+        glyph = self.get_guide_representation(
+            glyph=guide_glyph,
+            font=guide_glyph.font,
+            angle=self.angle
+        )
+        p = self.nib_pen(
+            self.font,
+            self.angle,
+            self.width,
+            self.height,
+            self._draw_nib_faces,
+            nib_superness=self.superness,
+            trace=True
+        )
         glyph.draw(p)
         p.trace_path(self.glyph)
 
@@ -114,13 +130,13 @@ class JKNibRoboFont(JKNib):
             self._draw_preview_glyph(True)
 
     def _glyph_changed(self, notification):
-        #print("Glyph changed")
+        # print("Glyph changed")
         if self.glyph is not None:
             self.save_settings()
         self.glyph = notification["glyph"]
         self.font = CurrentFont()
         self.font_layers = self.self.getLayerList()
-        #print(self.font)
+        # print(self.font)
         if self.glyph is not None:
             self.load_settings()
 
