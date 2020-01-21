@@ -9,7 +9,8 @@ except ImportError:
     from GlyphsApp.drawingTools import *
 
 from nibLib import DEBUG_CENTER_POINTS, DEBUG_CURVE_POINTS
-from nibLib.geometry import angleBetweenPoints, getPointsFromCurve, optimizePointPath
+from nibLib.geometry import angleBetweenPoints, getPointsFromCurve, \
+    optimizePointPath
 from nibLib.pens.rectNibPen import RectNibPen
 
 
@@ -36,9 +37,9 @@ class OvalNibPen(RectNibPen):
 
     def _draw_nib_face(self, pt):
         save()
-        #fill(*self.path_fill)
-        #strokeWidth(0)
-        #stroke(None)
+        # fill(*self.path_fill)
+        # strokeWidth(0)
+        # stroke(None)
         translate(pt[0], pt[1])
         rotate(degrees(self.angle))
         oval(
