@@ -4,7 +4,7 @@ Nib simulation library for font editors (well, RoboFont at the moment).
 
 ## Available nib shapes
 
-* Rectangle (with tracing to outlines)
+* Rectangle
 * Oval
 * Superellipse
 
@@ -25,3 +25,4 @@ Open the script `NibLibRF.py` in RoboFont’s macro panel and run it. NibLib wil
 ## Known bugs
 
 * This is a development version, everything may be broken.
+* Only the rectangular nib will trace outlines using lines and curves, the other modes currently only produce line segments.
