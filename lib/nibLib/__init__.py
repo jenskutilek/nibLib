@@ -1,11 +1,9 @@
 from __future__ import division, print_function
 
-
-
 DEBUG = False
 DEBUG_CENTER_POINTS = False
 DEBUG_CURVE_POINTS = False
-#DEBUG_SEGMENTS = False
+# DEBUG_SEGMENTS = False
 
 # Defaults keys
 
