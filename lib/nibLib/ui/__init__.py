@@ -9,10 +9,6 @@ from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, \
 from nibLib.pens import nib_models
 
 
-def UpdateCurrentGlyphView():
-    pass
-
-
 class JKNib(BaseWindowController):
 
     def __init__(self, glyph, font):
@@ -151,21 +147,13 @@ class JKNib(BaseWindowController):
             callback=self._trace_callback
         )
 
-        self.observers = [
-            ("_preview", "drawBackground"),
-            ("_preview", "drawInactive"),
-            ("_previewFull", "drawPreview"),
-            ("_glyph_changed", "currentGlyphChanged"),
-            ("_font_changed", "fontBecameCurrent"),
-            ("_font_resign", "fontResignCurrent"),
-        ]
-
         self.envSpecificInit()
         self._update_layers()
+        self.load_settings()
         # self._update_ui()
         # self.w.trace_outline.enable(False)
         self.w.open()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def envSpecificInit(self):
         pass
@@ -175,9 +163,13 @@ class JKNib(BaseWindowController):
             self.save_settings()
         self.envSpecificQuit()
         super(JKNib, self).windowCloseCallback(sender)
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def envSpecificQuit(self):
+        pass
+
+    def _update_current_glyph_view(self):
+        # Overwrite with editor-specific update call
         pass
 
     def _update_layers(self):
@@ -238,30 +230,30 @@ class JKNib(BaseWindowController):
         self.model = self.w.model_select.getItems()[sender.get()]
         self.nib_pen = nib_models[self.model]
         self.check_secondary_ui()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _nib_angle_callback(self, sender):
         angle = int(round(degrees(sender.get())))
         self.angle = radians(angle)
         self.w.angle_text.set("%i" % angle)
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _nib_width_callback(self, sender):
         self.width = int(round(sender.get()))
         self.w.width_text.set("%i" % self.width)
         self.w.height_slider.setMaxValue(self.width)
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _nib_height_callback(self, sender):
         self.height = int(round(sender.get()))
         self.w.height_text.set("%i" % self.height)
         self.w.width_slider.setMinValue(self.height)
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _nib_superness_callback(self, sender):
         self.superness = sender.get()
         self.w.superness_text.set("%0.2f" % self.superness)
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _glyph_local_callback(self, sender):
         value = sender.get()
@@ -275,11 +267,11 @@ class JKNib(BaseWindowController):
 
     def _draw_preview_callback(self, sender):
         self._draw_in_preview_mode = sender.get()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def _draw_faces_callback(self, sender):
         self._draw_nib_faces = sender.get()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def get_guide_representation(self, glyph, font, angle):
         # TODO: Rotate, add extreme points, rotate back

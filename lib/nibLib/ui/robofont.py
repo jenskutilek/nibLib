@@ -55,19 +55,31 @@ def _unregisterFactory():
 
 class JKNibRoboFont(JKNib):
 
+    observers = (
+        ("_preview", "drawBackground"),
+        ("_preview", "drawInactive"),
+        ("_previewFull", "drawPreview"),
+        ("_glyph_changed", "currentGlyphChanged"),
+        ("_font_changed", "fontBecameCurrent"),
+        ("_font_resign", "fontResignCurrent"),
+    )
+
     def __init__(self):
-        super(JKNibRoboFont, self).__init__(CurrentGlyph(), CurrentFont())
+        super(JKNibRoboFont, self).__init__(
+            CurrentGlyph(),
+            CurrentFont()
+        )
 
     def envSpecificInit(self):
         self.setUpBaseWindowBehavior()
         self.addObservers()
         _registerFactory()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def envSpecificQuit(self):
         self.removeObservers()
         _unregisterFactory()
-        UpdateCurrentGlyphView()
+        self._update_current_glyph_view()
 
     def addObservers(self):
         for method, observer in self.observers:
@@ -81,6 +93,9 @@ class JKNibRoboFont(JKNib):
 
     def getLayerList(self):
         return ["foreground"] + self.font.layerOrder
+
+    def _update_current_glyph_view(self):
+        UpdateCurrentGlyphView()
 
     def _draw_space_callback(self, sender):
         # RF-specific: Draw in space center
