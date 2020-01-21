@@ -44,7 +44,7 @@ class JKNib(BaseWindowController):
         self.w.model_select = vanilla.PopUpButton(
             (col, y, -48, 20),
             nib_models.keys(),
-            callback = self._model_select_callback,
+            callback=self._model_select_callback,
         )
 
         y += 32
@@ -52,11 +52,11 @@ class JKNib(BaseWindowController):
         self.w.angle_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=0,
-            maxValue = pi,
-            value = radians(30),
-            tickMarkCount = 7,
-            callback = self._nib_angle_callback,
-            stopOnTickMarks = False,
+            maxValue=pi,
+            value=radians(30),
+            tickMarkCount=7,
+            callback=self._nib_angle_callback,
+            stopOnTickMarks=False,
         )
         self.w.angle_text = vanilla.TextBox((-40, y, -8, 20), "%i" % int(round(degrees(self.angle))))
 
@@ -65,12 +65,12 @@ class JKNib(BaseWindowController):
         self.w.width_label = vanilla.TextBox((8, y, col-8, 20), "Width")
         self.w.width_slider = vanilla.Slider(
             (col, y, -48, 20),
-            minValue = 0,
-            maxValue = 200,
-            value = self.width,
-            # tickMarkCount = 7,
-            callback = self._nib_width_callback,
-            # stopOnTickMarks = False,
+            minValue=0,
+            maxValue=200,
+            value=self.width,
+            # tickMarkCount=7,
+            callback=self._nib_width_callback,
+            # stopOnTickMarks=False,
         )
         self.w.width_text = vanilla.TextBox((-40, y, -8, 20), "%i" % self.width)
 
@@ -79,12 +79,12 @@ class JKNib(BaseWindowController):
         self.w.height_label = vanilla.TextBox((8, y, col-8, 20), "Height")
         self.w.height_slider = vanilla.Slider(
             (col, y, -48, 20),
-            minValue = 1,
-            maxValue = 200,
-            value = self.height,
-            # tickMarkCount = 7,
-            callback = self._nib_height_callback,
-            # stopOnTickMarks = False,
+            minValue=1,
+            maxValue=200,
+            value=self.height,
+            # tickMarkCount=7,
+            callback=self._nib_height_callback,
+            # stopOnTickMarks=False,
         )
         self.w.height_text = vanilla.TextBox((-40, y, -8, 20), "%i" % self.height)
 
@@ -93,10 +93,10 @@ class JKNib(BaseWindowController):
         self.w.superness_label = vanilla.TextBox((8, y, col-8, 20), "Super")
         self.w.superness_slider = vanilla.Slider(
             (col, y, -48, 20),
-            minValue = 1.01,
-            maxValue = 15.0,
-            value = self.superness,
-            callback = self._nib_superness_callback,
+            minValue=1.01,
+            maxValue=15.0,
+            value=self.superness,
+            callback=self._nib_superness_callback,
         )
         self.w.superness_text = vanilla.TextBox(
             (-40, y, -8, 20),
@@ -108,14 +108,14 @@ class JKNib(BaseWindowController):
         self.w.guide_select = vanilla.PopUpButton(
             (col, y, -48, 20),
             []
-            # callback = self._guide_select_callback,
+            # callback=self._guide_select_callback,
         )
 
         y += 32
         self.w.glyph_local = vanilla.CheckBox(
             (col, y, -40, 20),
             "Glyph Uses Local Parameters",
-            callback = self._glyph_local_callback,
+            callback=self._glyph_local_callback,
             value=False,
         )
 
@@ -124,7 +124,7 @@ class JKNib(BaseWindowController):
         self.w.draw_space = vanilla.CheckBox(
             (col, y, -48, 20),
             "Draw In Space Center",
-            callback = self._draw_space_callback,
+            callback=self._draw_space_callback,
             value=False,
         )
 
@@ -132,7 +132,7 @@ class JKNib(BaseWindowController):
         self.w.draw_preview = vanilla.CheckBox(
             (col, y, -48, 20),
             "Draw In Preview Mode",
-            callback = self._draw_preview_callback,
+            callback=self._draw_preview_callback,
             value=False,
         )
 
@@ -140,15 +140,15 @@ class JKNib(BaseWindowController):
         self.w.draw_faces = vanilla.CheckBox(
             (col, y, -48, 20),
             "Draw Nib Faces In RGB",
-            callback = self._draw_faces_callback,
+            callback=self._draw_faces_callback,
             value=False,
         )
 
         y += 32
         self.w.trace_outline = vanilla.Button(
             (col, y, 120, 20),
-            title = "Trace Outline",
-            callback = self._trace_callback
+            title="Trace Outline",
+            callback=self._trace_callback
         )
 
         self.observers = [
@@ -291,6 +291,7 @@ class JKNib(BaseWindowController):
             return
         guide_glyph = self.glyph.getLayer(self.guide_layer)
         glyph = self.get_guide_representation(
+            glyph=guide_glyph,
             font=guide_glyph.font,
             angle=self.angle
         )
@@ -307,40 +308,10 @@ class JKNib(BaseWindowController):
         p.trace_path(self.glyph)
 
     def _setup_draw(self, preview=False):
-        if preview:
-            fill(0)
-            stroke(0)
-        else:
-            fill(0.6, 0.7, 0.9, 0.5)
-            stroke(0.6, 0.7, 0.9)
-        # strokeWidth(self.height)
-        # strokeWidth(1)
-        strokeWidth(0)
-        stroke(None)
-        lineJoin(self.line_join)
+        pass
 
     def _draw_preview_glyph(self, preview=False):
-        if self.guide_layer is None:
-            self._update_layers()
-            return
-        glyph = self.get_guide_representation(
-            font=guide_glyph.font,
-            angle=self.angle
-        )
-        save()
-        self._setup_draw(preview=preview)
-        # TODO: Reuse pen object.
-        # Needs modifications to the pens before possible.
-        p = self.nib_pen(
-            self.font,
-            self.angle,
-            self.width,
-            self.height,
-            self._draw_nib_faces,
-            nib_superness=self.superness
-        )
-        glyph.draw(p)
-        restore()
+        raise NotImplementedError
 
     def save_to_lib(self, font_or_glyph, libkey, value):
         pass

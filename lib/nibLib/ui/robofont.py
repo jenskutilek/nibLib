@@ -3,7 +3,7 @@ from __future__ import division, print_function
 # RoboFont-internal packages
 from lib.tools.extremePoints import ExtremePointPen
 from math import degrees
-from mojo.drawingTools import *
+from mojo.drawingTools import fill, lineJoin, restore, save, strokeWidth, stroke
 from mojo.events import addObserver, removeObserver
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.UI import UpdateCurrentGlyphView
@@ -80,7 +80,7 @@ class JKNibRoboFont(JKNib):
             removeObserver(self, "spaceCenterDraw")
 
     def getLayerList(self):
-        return self.font.layerOrder
+        return ["foreground"] + self.font.layerOrder
 
     def _draw_space_callback(self, sender):
         # RF-specific: Draw in space center
@@ -130,15 +130,51 @@ class JKNibRoboFont(JKNib):
             self._draw_preview_glyph(True)
 
     def _glyph_changed(self, notification):
-        # print("Glyph changed")
         if self.glyph is not None:
             self.save_settings()
         self.glyph = notification["glyph"]
         self.font = CurrentFont()
-        self.font_layers = self.self.getLayerList()
-        # print(self.font)
+        self.font_layers = self.getLayerList()
         if self.glyph is not None:
             self.load_settings()
+
+    def _setup_draw(self, preview=False):
+        if preview:
+            fill(0)
+            stroke(0)
+        else:
+            fill(0.6, 0.7, 0.9, 0.5)
+            stroke(0.6, 0.7, 0.9)
+        # strokeWidth(self.height)
+        # strokeWidth(1)
+        strokeWidth(0)
+        stroke(None)
+        lineJoin(self.line_join)
+
+    def _draw_preview_glyph(self, preview=False):
+        if self.guide_layer is None:
+            self._update_layers()
+            return
+        guide_glyph = self.glyph.getLayer(self.guide_layer)
+        glyph = self.get_guide_representation(
+            glyph=guide_glyph,
+            font=guide_glyph.font,
+            angle=self.angle
+        )
+        save()
+        self._setup_draw(preview=preview)
+        # TODO: Reuse pen object.
+        # Needs modifications to the pens before possible.
+        p = self.nib_pen(
+            self.font,
+            self.angle,
+            self.width,
+            self.height,
+            self._draw_nib_faces,
+            nib_superness=self.superness
+        )
+        glyph.draw(p)
+        restore()
 
     def save_to_lib(self, font_or_glyph, libkey, value):
         if value is None:
@@ -167,4 +203,4 @@ class JKNibRoboFont(JKNib):
         if self.font is None:
             self.font_layers = []
         else:
-            self.font_layers = self.self.getLayerList()
+            self.font_layers = self.getLayerList()
