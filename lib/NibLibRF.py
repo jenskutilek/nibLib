@@ -1,2 +1,3 @@
-from nibLib.ui.robofont import JKNib
-OpenWindow(JKNib)
+from nibLib.ui.robofont import JKNibRoboFont
+
+OpenWindow(JKNibRoboFont)
