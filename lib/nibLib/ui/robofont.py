@@ -13,15 +13,15 @@ from nibLib import DEBUG, rf_guide_key
 
 
 def NibGuideGlyphFactory(glyph, font, angle):
-    pen = ExtremePointPen(vertical=True, horizontal=True)
+    # pen = ExtremePointPen(vertical=True, horizontal=True)
     g = RGlyph(glyph).copy()
-    g.rotateBy(degrees(-angle))
-    # g.extremePoints()
-    g.drawPoints(pen)
-    g.clear()
-    out_pen = g.getPointPen()
-    pen.drawPoints(out_pen)
-    g.rotateBy(degrees(angle))
+    # g.rotateBy(degrees(-angle))
+    # # g.extremePoints()
+    # g.drawPoints(pen)
+    # g.clear()
+    # out_pen = g.getPointPen()
+    # pen.drawPoints(out_pen)
+    # g.rotateBy(degrees(angle))
     return g
 
 

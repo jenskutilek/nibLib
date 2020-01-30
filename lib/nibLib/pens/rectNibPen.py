@@ -85,7 +85,21 @@ class RectNibPen(NibPen):
             self.path.append([(r1), (r2), (b2), (b1)])
         elif self.color:
             fill(1, 1, 0, self.alpha)
+
+        newPath()
+        moveTo(b4)
+        lineTo(r4)
+        lineTo(r3)
+        lineTo(b3)
+        closePath()
+        if not self.trace:
+            drawPath()
+
+        if self.trace:
+            self.path.append([(b4), (r4), (r3), (b3)])
+        elif self.color:
             if self.highlight_nib_faces:
+                fill(1, 1, 0, self.alpha)
                 stroke(0)
                 strokeWidth(0.5)
 
@@ -130,6 +144,23 @@ class RectNibPen(NibPen):
         tpt1 = self.transformPoint(pt1)
         tpt2 = self.transformPoint(pt2)
 
+        # if not self.trace:
+        #     text("b1", b1)
+        #     text("b2", b2)
+        #     text("b3", b3)
+        #     text("b4", b4)
+
+        #     text("bc1", bc1)
+        #     text("bc2", bc2)
+
+        #     text("tpt1", tpt1)
+        #     text("tpt2", tpt2)
+
+        #     text("r1", r1)
+        #     text("r2", r2)
+        #     text("r3", r3)
+        #     text("r4", r4)
+
         newPath()
         moveTo(b1)
         curveTo(bc1, bc2, b2)
@@ -168,8 +199,6 @@ class RectNibPen(NibPen):
             self.path.append([(r1), (rc1, rc2, r2), (r3), (tpth2, tpth1, r4)])
         elif self.color:
             fill(0, 1, 0, self.alpha)
-            #stroke(0)
-            #strokeWidth(0.5)
 
         newPath()
         moveTo(r1)
@@ -181,12 +210,30 @@ class RectNibPen(NibPen):
             drawPath()
 
         if self.trace:
-            self.path.append([(r1), (rc1, rc2, r2), (b2), (bc2, bc1, b1)])    
+            self.path.append([(r1), (rc1, rc2, r2), (b2), (bc2, bc1, b1)])
+        elif self.color:
+            fill(1, 1, 0, self.alpha)
+            stroke(0)
+            strokeWidth(0.5)
+
+        newPath()
+        moveTo(r4)
+        curveTo(tpth1, tpth2, r3)
+        lineTo(b3)
+        curveTo(tpt2, tpt1, b4)
+        closePath()
+        if not self.trace:
+            drawPath()
+
+        if self.trace:
+            self.path.append([(r4), (tpth1, tpth2, r3), (b3), (tpt2, tpt1, b4)])
         elif self.color:
             fill(1, 1, 0, self.alpha)
             if self.highlight_nib_faces:
                 stroke(0)
                 strokeWidth(0.5)
+
+        # Draw the nib face
 
         newPath()
         moveTo(b1)
@@ -260,7 +307,21 @@ class RectNibPen(NibPen):
             self.path.append([(r1), (r2), (b2), (b1)])
         elif self.color:
             fill(1, 1, 0, self.alpha)
+
+        newPath()
+        moveTo(b4)
+        lineTo(r4)
+        lineTo(r3)
+        lineTo(b3)
+        closePath()
+        if not self.trace:
+            drawPath()
+
+        if self.trace:
+            self.path.append([(b4), (r4), (r3), (b3)])
+        elif self.color:
             if self.highlight_nib_faces:
+                fill(1, 1, 0, self.alpha)
                 stroke(0)
                 strokeWidth(0.5)
 

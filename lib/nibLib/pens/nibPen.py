@@ -56,7 +56,7 @@ class NibPen(BasePen):
                 first = False
             else:
                 p.closePath()
-                tmp.correctDirection()
+                # tmp.correctDirection()
                 out_glyph.appendGlyph(tmp)
                 tmp.clear()
             p.moveTo((
@@ -88,8 +88,8 @@ class NibPen(BasePen):
                 else:
                     print("Unknown segment type:", segment)
         p.closePath()
-        tmp.correctDirection()
+        # tmp.correctDirection()
         out_glyph.appendGlyph(tmp)
-        out_glyph.removeOverlap()
-        out_glyph.removeOverlap()
+        # out_glyph.removeOverlap()
+        # out_glyph.removeOverlap()
         out_glyph.update()
