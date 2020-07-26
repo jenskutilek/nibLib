@@ -1,371 +1,186 @@
 from __future__ import division, print_function
 
-from math import cos, pi, sin
+from math import atan2, cos, pi, sin
 
 try:
     from mojo.drawingTools import *
 except ImportError:
     from GlyphsApp.drawingTools import *
 
+from AppKit import NSBezierPath, NSColor
+
+
 from nibLib.pens.nibPen import NibPen
 
 
 class RectNibPen(NibPen):
+    def addPath(self, path=[]):
+        """
+        Add a path to the nib path.
+        """
+        if path:
+            if self.trace:
+                self.path.append(path)
+            else:
+                self.drawPath(path)
+
+    def drawPath(self, path=[]):
+        """
+        Draw the points from path to a NSBezierPath.
+        """
+        subpath = NSBezierPath.alloc().init()
+        subpath.moveTo_(path[0])
+        for p in path[1:]:
+            subpath.lineTo_(p)
+        subpath.closePath()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(
+            0, 0, 1, self.alpha
+        ).set()
+        subpath.stroke()
 
     def transformPoint(self, pt, d=1):
-        return(
-            pt[0] + self.a * d * cos(self.angle) + self.b * cos(pi/2 + self.angle),
-            pt[1] + self.a * d * sin(self.angle) + self.b * sin(pi/2 + self.angle)
+        return (
+            pt[0]
+            + self.a * d * cos(self.angle)
+            + self.b * cos(pi / 2 + self.angle),
+            pt[1]
+            + self.a * d * sin(self.angle)
+            + self.b * sin(pi / 2 + self.angle),
         )
 
     def transformPointHeight(self, pt, d=1):
         return (
-            pt[0] + self.a * d * cos(self.angle) - self.b * cos(pi/2 + self.angle),
-            pt[1] + self.a * d * sin(self.angle) - self.b * sin(pi/2 + self.angle)
+            pt[0]
+            + self.a * d * cos(self.angle)
+            - self.b * cos(pi / 2 + self.angle),
+            pt[1]
+            + self.a * d * sin(self.angle)
+            - self.b * sin(pi / 2 + self.angle),
         )
 
+    def transformedRect(self, P):
+        """
+        Transform a point to a rect describing the four points of the nib face.
+
+          D-------------------------C
+          |            P            |
+          A-------------------------B
+        """
+        A = self.transformPointHeight(P, -1)
+        B = self.transformPointHeight(P)
+        C = self.transformPoint(P)
+        D = self.transformPoint(P, -1)
+        return A, B, C, D
+
     def _moveTo(self, pt):
-        # moveTo(pt)
         self.__currentPoint = pt
         self.contourStart = pt
 
     def _lineTo(self, pt):
+        """
+        Points of the nib face:
 
-        b1 = self.transformPoint(self.__currentPoint, -1)
-        b2 = self.transformPoint(pt, -1)
-        b3 = self.transformPoint(pt)
-        b4 = self.transformPoint(self.__currentPoint)
+        D1                           C1     D2                           C2
+          X-------------------------X         X-------------------------X
+          |            X            | ------> |            X            |
+          X-------------------------X         X-------------------------X
+        A1                           B1     A2                           B2
 
-        r1 = self.transformPointHeight(self.__currentPoint, -1)
-        r2 = self.transformPointHeight(pt, -1)
-        r3 = self.transformPointHeight(pt)
-        r4 = self.transformPointHeight(self.__currentPoint)
+        The points A2, B2, C2, D2 are the points of the nib face translated to
+        the end of the current stroke.
+        """
 
-        if self.color and not self.trace:
-            save()
-            fill(0, 0, 1, self.alpha)
-        newPath()
-        moveTo(b1)
-        lineTo(b2)
-        lineTo(b3)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
+        A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
+        A2, B2, C2, D2 = self.transformedRect(pt)
 
-        if self.trace:
-            self.path.append([(b1), (b2), (b3), (b4)])
-        elif self.color:
-            fill(1, 0, 0, self.alpha)
+        x1, y1 = self.__currentPoint
+        x2, y2 = pt
 
-        newPath()
-        moveTo(r1)
-        lineTo(r2)
-        lineTo(r3)
-        lineTo(r4)
-        closePath()
-        if not self.trace:
-            drawPath()
+        # Relative angle between nib and path
+        rho = self.angle - atan2(y2 - y1, x2 - x1)
+        print(rho, rho/pi)
 
-        if self.trace:
-            self.path.append([(r1), (r2), (r3), (r4)])
-        elif self.color:
-            fill(0, 1, 0, self.alpha)
+        path = None
 
-        newPath()
-        moveTo(r1)
-        lineTo(r2)
-        lineTo(b2)
-        lineTo(b1)
-        closePath()
-        if not self.trace:
-            drawPath()
+        pi_05 = 0.5 * pi
+        pi_15 = 1.5 * pi
 
-        if self.trace:
-            self.path.append([(r1), (r2), (b2), (b1)])
-        elif self.color:
-            fill(1, 1, 0, self.alpha)
-
-        newPath()
-        moveTo(b4)
-        lineTo(r4)
-        lineTo(r3)
-        lineTo(b3)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b4), (r4), (r3), (b3)])
-        elif self.color:
-            if self.highlight_nib_faces:
-                fill(1, 1, 0, self.alpha)
-                stroke(0)
-                strokeWidth(0.5)
-
-        newPath()
-        moveTo(b1)
-        lineTo(r1)
-        lineTo(r4)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (r1), (r4), (b4)])
-        elif self.color:
-            restore()
+        if rho == 0:
+            path = (A1, A2, D2, D1)
+        elif 0 > rho > -pi_05 or rho > pi_15:
+            path = (A1, B1, B2, A2, D2, D1)
+        elif rho == -pi_05 or rho == pi_15:
+            path = (A1, B1, B2, A2)
+        elif -pi_05 > rho > -pi or pi_15 > rho > pi:
+            path = (A1, B1, C1, C2, B2, A2)
+        elif rho == -pi or rho == pi:
+            path = (B2, B1, C1, C2)
+        elif pi > rho > pi_05 or -pi > rho > -pi_15:
+            path = (C2, B2, B1, C1, D1, D2)
+        elif rho == pi_05 or rho == -pi_15:
+            path = (D2, C2, C1, D1)
+        elif pi_05 > rho > 0 or rho < -pi_15:
+            path = (A2, D2, C2, C1, D1, A1)
+        self.addPath(path)
 
         self.__currentPoint = pt
 
     def _curveToOne(self, pt1, pt2, pt3):
+        self.__currentPoint = pt3
+        return
 
-        b1 = self.transformPoint(self.__currentPoint, -1)
-        b2 = self.transformPoint(pt3, -1)
-        b3 = self.transformPoint(pt3)
-        b4 = self.transformPoint(self.__currentPoint)
+        A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
 
-        bc1 = self.transformPoint(pt1, -1)
-        bc2 = self.transformPoint(pt2, -1)
+        # Control points
+        Ac1, Bc1, Cc1, Dc1 = self.transformedRect(pt1)
+        Ac2, Bc2, Cc2, Dc2 = self.transformedRect(pt2)
 
-        r1 = self.transformPointHeight(self.__currentPoint, -1)
-        r2 = self.transformPointHeight(pt3, -1)
-        r3 = self.transformPointHeight(pt3)
-        r4 = self.transformPointHeight(self.__currentPoint)
+        # End points
+        A2, B2, C2, D2 = self.transformedRect(pt3)
 
-        rc1 = self.transformPointHeight(pt1, -1)
-        rc2 = self.transformPointHeight(pt2, -1)
+        # Angle at start of curve
+        x0, y0 = self.__currentPoint
+        x1, y1 = pt1
+        rho = self.angle - atan2(y1 - y0, x1 - x0)
+        print(rho)
 
-        if self.color and not self.trace:
-            save()
-            fill(0, 0, 1, self.alpha)
+        # Angle at end of curve
+        x2, y2 = pt2
+        x3, y3 = pt3
+        rho1 = self.angle - atan2(y3 - y2, x3 - x2)
+        print(rho1)
 
-        tpt1 = self.transformPoint(pt1)
-        tpt2 = self.transformPoint(pt2)
+        path = None
 
-        # if not self.trace:
-        #     text("b1", b1)
-        #     text("b2", b2)
-        #     text("b3", b3)
-        #     text("b4", b4)
+        pi_05 = 0.5 * pi
+        pi_15 = 1.5 * pi
 
-        #     text("bc1", bc1)
-        #     text("bc2", bc2)
-
-        #     text("tpt1", tpt1)
-        #     text("tpt2", tpt2)
-
-        #     text("r1", r1)
-        #     text("r2", r2)
-        #     text("r3", r3)
-        #     text("r4", r4)
-
-        newPath()
-        moveTo(b1)
-        curveTo(bc1, bc2, b2)
-        lineTo(b3)
-        curveTo(
-            tpt2,
-            tpt1,
-            b4,
-        )
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (bc1, bc2, b2), (b3), (tpt2, tpt1, b4)])
-        elif self.color:
-            fill(1, 0, 0, self.alpha)
-
-        tpth1 = self.transformPointHeight(pt1)
-        tpth2 = self.transformPointHeight(pt2)
-
-        newPath()
-        moveTo(r1)
-        curveTo(rc1, rc2, r2)
-        lineTo(r3)
-        curveTo(
-            tpth2,
-            tpth1,
-            r4,
-        )
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(r1), (rc1, rc2, r2), (r3), (tpth2, tpth1, r4)])
-        elif self.color:
-            fill(0, 1, 0, self.alpha)
-
-        newPath()
-        moveTo(r1)
-        curveTo(rc1, rc2, r2)
-        lineTo(b2)
-        curveTo(bc2, bc1, b1)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(r1), (rc1, rc2, r2), (b2), (bc2, bc1, b1)])
-        elif self.color:
-            fill(1, 1, 0, self.alpha)
-            stroke(0)
-            strokeWidth(0.5)
-
-        newPath()
-        moveTo(r4)
-        curveTo(tpth1, tpth2, r3)
-        lineTo(b3)
-        curveTo(tpt2, tpt1, b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(r4), (tpth1, tpth2, r3), (b3), (tpt2, tpt1, b4)])
-        elif self.color:
-            fill(1, 1, 0, self.alpha)
-            if self.highlight_nib_faces:
-                stroke(0)
-                strokeWidth(0.5)
-
-        # Draw the nib face
-
-        newPath()
-        moveTo(b1)
-        lineTo(r1)
-        lineTo(r4)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (r1), (r4), (b4)])
-        elif self.color:
-            restore()
+        if rho == 0:
+            path = (A1, B2, C2, D1)
+            #elif 0 > rho > -pi_05 or rho > pi_15:
+            #path = (A1, B1, B2, C2, D2, D1)
+        elif rho == -pi_05 or rho == pi_15:
+            path = (A1, B1, B2, A2)
+        elif -pi_05 > rho > -pi or pi_15 > rho > pi:
+            path = (A1, B1, C1, C2, D2, A2)
+        elif rho == -pi or rho == pi:
+            path = (A2, B1, C1, D2)
+        elif pi > rho > pi_05 or -pi > rho > -pi_15:
+            path = (A2, B2, B1, C1, D1, D2)
+        elif rho == pi_05 or rho == -pi_15:
+            path = (A2, B2, C1, D1)
+        elif pi_05 > rho > 0 or rho < -pi_15:
+            path = (A2, B2, C2, (Cc2, Cc1, C1), D1, A1)
+        self.addPath(path)
 
         self.__currentPoint = pt3
 
     def _closePath(self):
-
-        b1 = self.transformPoint(self.__currentPoint, -1)
-        b2 = self.transformPoint(self.contourStart, -1)
-        b3 = self.transformPoint(self.contourStart)
-        b4 = self.transformPoint(self.__currentPoint)
-
-        r1 = self.transformPointHeight(self.__currentPoint, -1)
-        r2 = self.transformPointHeight(self.contourStart, -1)
-        r3 = self.transformPointHeight(self.contourStart)
-        r4 = self.transformPointHeight(self.__currentPoint)
-
-        if self.color and not self.trace:
-            save()
-            fill(0, 0, 1, self.alpha)
-        newPath()
-        moveTo(b1)
-        lineTo(b2)
-        lineTo(b3)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (b2), (b3), (b4)])
-        elif self.color:
-            fill(1, 0, 0, self.alpha)
-
-        newPath()
-        moveTo(r1)
-        lineTo(r2)
-        lineTo(r3)
-        lineTo(r4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(r1), (r2), (r3), (r4)])
-        elif self.color:
-            fill(0, 1, 0, self.alpha)
-
-        newPath()
-        moveTo(r1)
-        lineTo(r2)
-        lineTo(b2)
-        lineTo(b1)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(r1), (r2), (b2), (b1)])
-        elif self.color:
-            fill(1, 1, 0, self.alpha)
-
-        newPath()
-        moveTo(b4)
-        lineTo(r4)
-        lineTo(r3)
-        lineTo(b3)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b4), (r4), (r3), (b3)])
-        elif self.color:
-            if self.highlight_nib_faces:
-                fill(1, 1, 0, self.alpha)
-                stroke(0)
-                strokeWidth(0.5)
-
-        newPath()
-        moveTo(b1)
-        lineTo(r1)
-        lineTo(r4)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (r1), (r4), (b4)])
-        elif self.color:
-            restore()
-
+        # Glyphs calls closePath though it is not really needed there ...?
+        self._lineTo(self.contourStart)
         self.__currentPoint = None
 
     def _endPath(self):
-
-        b1 = self.transformPoint(self.__currentPoint, -1)
-        b4 = self.transformPoint(self.__currentPoint)
-
-        r1 = self.transformPointHeight(self.__currentPoint, -1)
-        r4 = self.transformPointHeight(self.__currentPoint)
-
-        if self.color and not self.trace:
-            save()
-            fill(1, 1, 0, self.alpha)
-            if self.highlight_nib_faces:
-                stroke(0)
-                strokeWidth(0.5)
-        newPath()
-        moveTo(b1)
-        lineTo(r1)
-        lineTo(r4)
-        lineTo(b4)
-        closePath()
-        if not self.trace:
-            drawPath()
-
-        if self.trace:
-            self.path.append([(b1), (r1), (r4), (b4)])
-        elif self.color:
-            restore()
-        self.__currentPoint = None
+        if self.__currentPoint:
+            A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
+            self.addPath((A1, B1, C1, D1))
