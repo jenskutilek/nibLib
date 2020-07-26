@@ -98,29 +98,18 @@ class RectNibPen(NibPen):
 
         # Relative angle between nib and path
         rho = self.angle - atan2(y2 - y1, x2 - x1)
-        print(rho, rho/pi)
 
         path = None
+        Q = rho / pi
 
-        pi_05 = 0.5 * pi
-        pi_15 = 1.5 * pi
-
-        if rho == 0:
-            path = (A1, A2, D2, D1)
-        elif 0 > rho > -pi_05 or rho > pi_15:
-            path = (A1, B1, B2, A2, D2, D1)
-        elif rho == -pi_05 or rho == pi_15:
-            path = (A1, B1, B2, A2)
-        elif -pi_05 > rho > -pi or pi_15 > rho > pi:
-            path = (A1, B1, C1, C2, B2, A2)
-        elif rho == -pi or rho == pi:
-            path = (B2, B1, C1, C2)
-        elif pi > rho > pi_05 or -pi > rho > -pi_15:
-            path = (C2, B2, B1, C1, D1, D2)
-        elif rho == pi_05 or rho == -pi_15:
-            path = (D2, C2, C1, D1)
-        elif pi_05 > rho > 0 or rho < -pi_15:
-            path = (A2, D2, C2, C1, D1, A1)
+        if 0 >= Q > -0.5 or Q >= 1.5:
+            path = (A1, B1, B2, C2, D2, D1)
+        elif -0.5 >= Q > -1 or 1.5 >= Q > 1:
+            path = (A1, B1, C1, C2, D2, A2)
+        elif 1 >= Q > 0.5 or -1 >= Q > -1.5:
+            path = (A2, B2, B1, C1, D1, D2)
+        elif 0.5 >= Q > 0 or Q <= -1.5:
+            path = (A2, B2, C2, C1, D1, A1)
         self.addPath(path)
 
         self.__currentPoint = pt
