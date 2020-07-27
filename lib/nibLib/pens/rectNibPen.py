@@ -191,7 +191,7 @@ class RectNibPen(NibPen):
             print("Q1-1")
 
             if 0 >= Q2 > -0.5 or Q2 >= 1.5:
-                path = (A1, B1, (Bc1, Bc2, B2), D2, (Dc2, Dc1, D1))
+                path = (A1, B1, (Bc1, Bc2, B2), C2, D2, (Dc2, Dc1, D1))
             elif -0.5 >= Q2 > -1 or 1.5 > Q2 > 1:
                 path = (A1, B1, (Bc1, Bc2, B2), C2, D2, (Dc2, Dc1, D1))
             elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
@@ -203,12 +203,13 @@ class RectNibPen(NibPen):
 
             if 0 >= Q2 > -0.5 or Q2 >= 1.5:
                 print("  Q2-1")
-                path = (A1, B1, (Bc1, Bc2, B2), D2, (Dc2, Dc1, D1))
+                path = (A1, B1, (Bc1, Bc2, B2), C2, D2, (Dc2, Dc1, D1))
             elif -0.5 >= Q2 > -1 or 1.5 >= Q2 > 1:
-                path = (B1, C1, (Cc1, Cc2, C2), A2, (Ac2, Ac1, A1))
+                path = (B1, C1, (Cc1, Cc2, C2), D2, A2, (Ac2, Ac1, A1))
             elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
                 print("  Q2-3")
                 path = (B1, C1, (Cc1, Cc2, C2), D2, A2, (Ac2, Ac1, A1))
+                # path = (B1, C1, D1, (Dc1, Dc2, D2), D2, A2, B2, (Bc2, Bc1, B1))
             elif 0.5 >= Q2 > 0 or Q2 <= -1.5:
                 path = ()
 
@@ -224,7 +225,7 @@ class RectNibPen(NibPen):
                 path = (B1, C1, (Cc1, Cc2, C2), A2, (Ac2, Ac1, A1))
             elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
                 print("  Q2-3")
-                path = (B1, C1, (Cc1, Cc2, C2), A2, (Ac2, Ac1, A1))
+                path = (C1, D1, (Dc1, Dc2, D2), A2, B2, (Bc2, Bc1, B1))
             elif 0.5 >= Q2 > 0 or Q2 <= -1.5:
                 print("  Q2-4")
                 # OK
