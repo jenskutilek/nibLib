@@ -1,6 +1,13 @@
 from __future__ import division, print_function
 
 from math import atan2, cos, pi, sin
+from fontTools.misc.bezierTools import (
+    calcCubicParameters,
+    solveQuadratic,
+    splitCubicAtT,
+    epsilon,
+)
+from fontTools.misc.transform import Transform
 
 try:
     from mojo.drawingTools import *
@@ -11,6 +18,30 @@ from AppKit import NSBezierPath, NSColor
 
 
 from nibLib.pens.nibPen import NibPen
+
+
+def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
+    # Transform the points for extrema calculation;
+    # transform is expected to rotate the points by - nib angle.
+    t1, t2, t3, t4 = transform.transformPoints([pt1, pt2, pt3, pt4])
+
+    (ax, ay), (bx, by), c, d = calcCubicParameters(t1, t2, t3, t4)
+    ax *= 3.0
+    ay *= 3.0
+    bx *= 2.0
+    by *= 2.0
+
+    # vertical
+    roots = [t for t in solveQuadratic(ay, by, c[1]) if 0 < t < 1]
+
+    # horizontal
+    roots += [t for t in solveQuadratic(ax, bx, c[0]) if 0 < t < 1]
+
+    # Use only unique roots and sort them
+    roots = sorted(set(roots))
+
+    # Split segment at roots (uses original points!)
+    return splitCubicAtT(pt1, pt2, pt3, pt4, *roots)
 
 
 class RectNibPen(NibPen):
@@ -115,6 +146,16 @@ class RectNibPen(NibPen):
         self.__currentPoint = pt
 
     def _curveToOne(self, pt1, pt2, pt3):
+        # Insert extrema at angle
+        segments = split_at_extrema(
+            self.__currentPoint, pt1, pt2, pt3, transform=self.transform
+        )
+        for segment in segments:
+            pt0, pt1, pt2, pt3 = segment
+            self._curveToOneNoExtrema(pt1, pt2, pt3)
+
+    def _curveToOneNoExtrema(self, pt1, pt2, pt3):
+
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
 
         # Control points

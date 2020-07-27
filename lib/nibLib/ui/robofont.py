@@ -1,8 +1,8 @@
 from __future__ import division, print_function
 
 # RoboFont-internal packages
-from lib.tools.extremePoints import ExtremePointPen
-from math import degrees
+# from lib.tools.extremePoints import ExtremePointPen
+# from math import degrees
 from mojo.drawingTools import fill, lineJoin, restore, save, strokeWidth, stroke
 from mojo.events import addObserver, removeObserver
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph

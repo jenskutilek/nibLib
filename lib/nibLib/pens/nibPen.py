@@ -1,6 +1,8 @@
 from __future__ import division, print_function
 
+from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
+from math import pi
 
 try:
     from mojo.drawingTools import stroke, strokeWidth
@@ -15,6 +17,12 @@ class NibPen(BasePen):
     ):
         BasePen.__init__(self, glyphSet)
         self.angle = angle
+        if self.angle > pi:
+            self.angle -= pi
+        elif self.angle < -pi:
+            self.angle += pi
+        # Store a transform, used for calculating extrema in some nib models
+        self.transform = Transform().rotate(-self.angle)
         self.width = width
         self.height = height
         self.a = 0.5 * width
