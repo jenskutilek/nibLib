@@ -60,7 +60,7 @@ class RectNibPen(NibPen):
         Draw the points from path to a NSBezierPath.
         """
         subpath = NSBezierPath.alloc().init()
-        subpath.moveTo_(path[0])
+        subpath.moveToPoint_(path[0])
         for p in path[1:]:
             subpath.lineTo_(p)
         subpath.closePath()
