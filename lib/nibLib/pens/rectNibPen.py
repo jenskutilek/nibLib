@@ -62,7 +62,13 @@ class RectNibPen(NibPen):
         subpath = NSBezierPath.alloc().init()
         subpath.moveToPoint_(path[0])
         for p in path[1:]:
-            subpath.lineTo_(p)
+            if len(p) == 3:
+                # curve
+                A, B, C = p
+                subpath.curveToPoint_controlPoint1_controlPoint2_(C, A, B)
+            else:
+                subpath.lineToPoint_(p)
+
         subpath.closePath()
         NSColor.colorWithCalibratedRed_green_blue_alpha_(
             0, 0, 1, self.alpha
