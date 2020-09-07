@@ -20,6 +20,11 @@ from AppKit import NSBezierPath, NSColor
 from nibLib.pens.nibPen import NibPen
 
 
+def round_pt(pt):
+    x, y = pt
+    return round(x), round(y)
+
+
 def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
     # Transform the points for extrema calculation;
     # transform is expected to rotate the points by - nib angle.
