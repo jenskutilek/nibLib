@@ -23,6 +23,7 @@ class NibPen(BasePen):
             self.angle += pi
         # Store a transform, used for calculating extrema in some nib models
         self.transform = Transform().rotate(-self.angle)
+        self.transform_reverse = Transform().rotate(self.angle)
         self.width = width
         self.height = height
         self.a = 0.5 * width
