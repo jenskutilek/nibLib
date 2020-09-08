@@ -257,5 +257,6 @@ class RectNibPen(NibPen):
 
     def _endPath(self):
         if self.__currentPoint:
-            A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
-            self.addPath((A1, B1, C1, D1))
+            # A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
+            # self.addPath(((A1,), (B1,), (C1,), (D1,)))
+            self.__currentPoint = None
