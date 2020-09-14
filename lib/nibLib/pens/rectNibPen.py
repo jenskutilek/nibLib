@@ -159,9 +159,13 @@ class RectNibPen(NibPen):
         rho2 = atan2(y3 - y2, x3 - x2)
 
         path = None
-        Q1 = rho1 / pi
-        Q2 = rho2 / pi
-        print(Q1, Q2)
+
+        # Q1 = (rho1 / pi)
+        # Q2 = (rho2 / pi)
+        # print(f"       Q1: {Q1}, Q2: {Q2}")
+        Q1 = normalize_quadrant(rho1 / pi)
+        Q2 = normalize_quadrant(rho2 / pi)
+        # print(f"    -> Q1: {Q1}, Q2: {Q2}")
 
         """
         Points of the nib face:
@@ -175,46 +179,119 @@ class RectNibPen(NibPen):
         The points A2, B2, C2, D2 are the points of the nib face translated to
         the end of the current stroke.
         """
-
-        if 0 <= Q1 < 0.5:
-            if 0 <= Q2 < 0.5:
+        if Q1 == 0:
+            if Q2 == 0:
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+            elif 0 < Q2 < 0.5:
                 path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
             elif 0.5 <= Q2 <= 1:
                 path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif -1 <= Q2 < -0.5:
+            elif -0.5 <= Q2 < 0:
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+
+        elif 0 < Q1 < 0.5:
+            if Q2 == 0:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif 0 <= Q2 < 0.5:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif 0.5 <= Q2 <= 1:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif -1 < Q2 < -0.5:
                 pass
             elif -0.5 <= Q2 < 0:
-                pass
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
 
-        elif 0.5 <= Q1 <= 1:
+        elif Q1 == 0.5:
             if 0 <= Q2 < 0.5:
-                pass
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif Q2 == 0.5:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
             elif 0.5 <= Q2 <= 1:
                 path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif -1 <= Q2 < -0.5:
-                pass
+            elif Q2 == -1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+
+        elif 0.5 < Q1 < 1:
+            if 0 <= Q2 < 0.5:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif 0.5 <= Q2 <= 1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif Q2 == -1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
             elif -0.5 <= Q2 < 0:
                 path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
 
-        elif -1 <= Q1 < -0.5:
+        elif Q1 == 1:
             if 0 <= Q2 < 0.5:
-                pass
-            elif 0.5 <= Q2 <= 1:
-                pass
-            elif -1 <= Q2 < -0.5:
-                pass
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif Q2 == 0.5:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif 0.5 < Q2 < 1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif Q2 == 1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif Q2 == -1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
             elif -0.5 <= Q2 < 0:
-                pass
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+
+        elif Q1 == -1:
+            if 0 <= Q2 < 0.5:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
+            elif Q2 == 0.5:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif 0.5 < Q2 < 1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif Q2 == 1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif Q2 == -1:
+                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -0.5 <= Q2 < 0:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+
+        elif -1 < Q1 < -0.5:
+            if 0 <= Q2 < 0.5:
+                print("Crash")
+            elif 0.5 <= Q2 <= 1:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif Q2 == -1:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -0.5 <= Q2 < 0:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+
+        elif Q1 == -0.5:
+            if Q2 == -1:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif Q2 == -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -0.5 <= Q2 < 0:
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+            elif Q2 == 0.0:
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+            elif Q2 == 1:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
 
         elif -0.5 <= Q1 < 0:
             if 0 <= Q2 < 0.5:
                 path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
             elif 0.5 <= Q2 <= 1:
-                pass
-            elif -1 <= Q2 < -0.5:
-                pass
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif Q2 == -1:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
+            elif -1 < Q2 < -0.5:
+                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
             elif -0.5 <= Q2 < 0:
-                pass
+                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
 
         self.addPath(path)
 
