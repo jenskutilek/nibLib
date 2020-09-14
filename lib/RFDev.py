@@ -32,7 +32,14 @@ from fontTools.misc.bezierTools import (
 from fontTools.misc.transform import Transform
 
 
-Root = namedtuple("Root", ["t", "direction"])
+def normalize_quadrant(q):
+    r = 2 * q
+    nearest = round(r)
+    e = abs(nearest - r)
+    if e > epsilon:
+        return q
+    rounded = nearest * 0.5
+    return rounded
 
 
 def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
@@ -42,10 +49,10 @@ def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
 
         >>> # A segment in which no extrema will be added.
         >>> split_at_extrema((297, 52), (406, 52), (496, 142), (496, 251))
-        [(((297, 52), (406, 52), (496, 142), (496, 251)), None)]
+        [((297, 52), (406, 52), (496, 142), (496, 251))]
         >>> from fontTools.misc.transform import Transform
         >>> split_at_extrema((297, 52), (406, 52), (496, 142), (496, 251), Transform().rotate(-27))
-        [(((297.0, 52.0), (84.48072108963274, -212.56513799170233), (15.572491694678519, -361.3686192413668), (15.572491694678547, -445.87035970621713)), 'h'), (((15.572491694678547, -445.8703597062171), (15.572491694678554, -506.84825401175414), (51.4551516055374, -534.3422304091257), (95.14950889754756, -547.6893014808263)), False)]
+        [((297.0, 52.0), (84.48072108963274, -212.56513799170233), (15.572491694678519, -361.3686192413668), (15.572491694678547, -445.87035970621713)), ((15.572491694678547, -445.8703597062171), (15.572491694678554, -506.84825401175414), (51.4551516055374, -534.3422304091257), (95.14950889754756, -547.6893014808263))]
     """
     # Transform the points for extrema calculation;
     # transform is expected to rotate the points by - nib angle.
@@ -61,38 +68,19 @@ def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
     by *= 2.0
 
     # vertical
-    roots = [
-        Root(t=t, direction="v")
-        for t in solveQuadratic(ay, by, c[1])
-        if 0 < t < 1
-    ]
+    roots = [t for t in solveQuadratic(ay, by, c[1]) if 0 < t < 1]
 
     # horizontal
-    roots += [
-        Root(t=t, direction="h")
-        for t in solveQuadratic(ax, bx, c[0])
-        if 0 < t < 1
-    ]
+    roots += [t for t in solveQuadratic(ax, bx, c[0]) if 0 < t < 1]
 
     # Use only unique roots and sort them
     # They should be unique before, or can a root be duplicated (in h and v?)
     roots = sorted(set(roots))
 
     if not roots:
-        return [((t1, t2, t3, t4), None)]
+        return [(t1, t2, t3, t4)]
 
-    # print("Roots:", roots)
-    # Split transformed segment at roots (remove annotation first)
-    split_segments = splitCubicAtT(t1, t2, t3, t4, *[r.t for r in roots])
-    # print("Split:", split_segments)
-
-    # Annotate the list of segments with extremum type again
-    split_segments_annotated = [
-        *[(s, roots[i][1]) for i, s in enumerate(split_segments[:-1])],
-        (split_segments[-1], False),
-    ]
-    # print(split_segments_annotated)
-    return split_segments_annotated
+    return splitCubicAtT(t1, t2, t3, t4, *roots)
 
 
 
@@ -209,14 +197,12 @@ class RectNibPen(NibPen):
         segments = split_at_extrema(
             self.__currentPoint, pt1, pt2, pt3, transform=self.transform
         )
-        prev_direction = False
-        for segment, direction in segments:
+        for segment in segments:
             pt0, pt1, pt2, pt3 = segment
-            self._curveToOneNoExtrema(pt1, pt2, pt3, prev_direction, direction)
-            prev_direction = direction
+            self._curveToOneNoExtrema(pt1, pt2, pt3)
 
-    def _curveToOneNoExtrema(self, pt1, pt2, pt3, direction_left=False, direction_right=False):
-        print("_curveToOneNoExtrema", pt1, pt2, pt3, direction_left, direction_right)
+    def _curveToOneNoExtrema(self, pt1, pt2, pt3):
+        print("_curveToOneNoExtrema", pt1, pt2, pt3)
 
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
 
@@ -240,17 +226,6 @@ class RectNibPen(NibPen):
 
         path = None
 
-        def normalize_quadrant(q):
-            r = 2 * q
-            nearest_integer = round(r)
-            e = abs(nearest_integer - r)
-            if e > epsilon:
-                return q
-            rounded = nearest_integer * 0.5
-            # if rounded == -1:
-            #     return 1
-            return rounded
-
         Q1 = (rho1 / pi)
         Q2 = (rho2 / pi)
         print(f"       Q1: {Q1}, Q2: {Q2}")
@@ -272,13 +247,11 @@ class RectNibPen(NibPen):
         """
         if Q1 == 0:
             if Q2 == 0:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0 < Q2 < 0.5:
                 path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+            elif 0 < Q2 < 0.5:
+                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
             elif 0.5 <= Q2 <= 1:
                 path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif -1 < Q2 < -0.5:
-                pass
             elif -0.5 <= Q2 < 0:
                 path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
 
