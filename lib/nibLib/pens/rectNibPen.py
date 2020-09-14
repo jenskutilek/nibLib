@@ -6,7 +6,11 @@ from math import atan2, pi
 try:
     from mojo.drawingTools import *
 except ImportError:
-    from GlyphsApp.drawingTools import *
+    try:
+        from GlyphsApp.drawingTools import *
+    except ImportError:
+        pass
+
 
 from AppKit import NSBezierPath, NSColor
 
@@ -21,7 +25,9 @@ class RectNibPen(NibPen):
         Add a path to the nib path.
         """
         if path:
-            path = [self.transform_reverse.transformPoints(pts) for pts in path]
+            path = [
+                self.transform_reverse.transformPoints(pts) for pts in path
+            ]
             if self.trace:
                 self.path.append(path)
             else:
@@ -210,65 +216,6 @@ class RectNibPen(NibPen):
             elif -0.5 <= Q2 < 0:
                 pass
 
-        # if 0 >= Q1 > -0.5 or Q1 >= 1.5:
-        #     print("Q1-1")
-
-        #     if 0 >= Q2 > -0.5 or Q2 >= 1.5:
-        #         path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-        #     elif -0.5 >= Q2 > -1 or 1.5 > Q2 > 1:
-        #         path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-        #     elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
-        #         print("  Q2-3")
-        #         # path = ((A1), (B1), (Bc1, Bc2, B2), (A2), (Ac2, Ac1, A1))
-
-        # elif -0.5 >= Q1 > -1 or 1.5 > Q1 > 1:
-        #     print("Q1-2")
-
-        #     if 0 >= Q2 > -0.5 or Q2 >= 1.5:
-        #         print("  Q2-1")
-        #         path = ((A1), (B1), (Bc1, Bc2, B2), (C2), (D2), (Dc2, Dc1, D1))
-        #     elif -0.5 >= Q2 > -1 or 1.5 >= Q2 > 1:
-        #         path = ((B1), (C1), (Cc1, Cc2, C2), (D2), (A2), (Ac2, Ac1, A1))
-        #     elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
-        #         print("  Q2-3")
-        #         path = ((B1), (C1), (Cc1, Cc2, C2), (D2), (A2), (Ac2, Ac1, A1))
-        #         # path = (B1, C1, D1, (Dc1, Dc2, D2), D2, A2, B2, (Bc2, Bc1, B1))
-        #     elif 0.5 >= Q2 > 0 or Q2 <= -1.5:
-        #         path = ()
-
-        # elif 1 >= Q1 > 0.5 or -1 >= Q1 > -1.5:
-        #     print("Q1-3")
-
-        #     if 0 >= Q2 > -0.5 or Q2 >= 1.5:
-        #         print("  Q2-1")
-        #         # OK
-        #         path = ((C1), (D1), (A1), (Ac1, Ac2, A2), (B2), (C2), (Cc2, Cc1, C1))
-        #     elif -0.5 >= Q2 > -1 or 1.5 >= Q2 > 1:
-        #         print("  Q2-2")
-        #         path = ((B1), (C1), (Cc1, Cc2, C2), (A2), (Ac2, Ac1, A1))
-        #     elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
-        #         print("  Q2-3")
-        #         path = ((C1), (D1), (Dc1, Dc2, D2), (A2), (B2), (Bc2, Bc1, B1))
-        #     elif 0.5 >= Q2 > 0 or Q2 <= -1.5:
-        #         print("  Q2-4")
-        #         # OK
-        #         path = ((C1), (D1), (Dc1, Dc2, D2), (A2), (B2), (Bc2, Bc1, B1))
-
-        # elif 0.5 >= Q1 > 0 or Q1 <= -1.5:
-        #     print("Q1-4")
-
-        #     if 0 >= Q2 > -0.5 or Q2 >= 1.5:
-        #         print("  Q2-1")
-        #         path = ((D1), (A1), (Ac1, Ac2, A2), (B2), (C2), (Cc2, Cc1, C1))
-        #     elif -0.5 >= Q2 > -1 or 1.5 >= Q2 > 1:
-        #         print("  Q2-2")
-        #         path = ((A1), (B1), (Bc1, Bc2, B2), (C2), (D2), (Dc2, Dc1, D1))
-        #     elif 1 >= Q2 > 0.5 or -1 >= Q2 > -1.5:
-        #         print("  Q2-3")
-        #         path = ()
-        #     elif 0.5 >= Q2 > 0 or Q2 <= -1.5:
-        #         print("  Q2-4")
-        #         path = ((D1), (A1), (Ac1, Ac2, A2), (B2), (C2), (Cc2, Cc1, C1))
         self.addPath(path)
 
         self.__currentPoint = pt3
