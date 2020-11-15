@@ -191,7 +191,10 @@ class JKNib(BaseWindowController):
             if model == self.model:
                 break
         self.w.model_select.set(i)
-        self.nib_pen = nib_models[self.model]
+        if self.model in nib_models:
+            self.nib_pen = nib_models[self.model]
+        else:
+            self.nib_pen = nib_models[list(nib_models.keys())[0]]
         self.w.angle_slider.set(self.angle)
         self.w.angle_text.set("%i" % int(round(degrees(self.angle))))
         self.w.width_slider.set(self.width)
