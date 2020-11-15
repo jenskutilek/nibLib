@@ -13,17 +13,18 @@ from nibLib.pens.ovalNibPen import OvalNibPen
 
 
 class SuperellipseNibPen(OvalNibPen):
-
     def setup_nib(self):
         steps = 100
         points = []
         # Build a quarter of the superellipse with the requested number of steps
         for i in range(0, steps + 1):
             t = i * 0.5 * pi / steps
-            points.append((
-                self.a * cos(t) ** (2 / self.nib_superness),
-                self.b * sin(t) ** (2 / self.nib_superness),
-            ))
+            points.append(
+                (
+                    self.a * cos(t) ** (2 / self.nib_superness),
+                    self.b * sin(t) ** (2 / self.nib_superness),
+                )
+            )
         try:
             points = optimizePointPath(points, 0.02)
         except:
@@ -49,7 +50,9 @@ class SuperellipseNibPen(OvalNibPen):
 
     def transform_nib_path(self, alpha):
 
-        self.nib_face_path_transformed = [self._get_rotated_point(pt, alpha) for pt in self.nib_face_path]
+        self.nib_face_path_transformed = [
+            self._get_rotated_point(pt, alpha) for pt in self.nib_face_path
+        ]
         self.cache_angle = alpha
 
     def _get_tangent_point(self, alpha):
@@ -65,7 +68,9 @@ class SuperellipseNibPen(OvalNibPen):
             self.transform_nib_path(self.angle - omega)
 
         x, y = max(self.nib_face_path_transformed, key=operator.itemgetter(1))
-        x, y = self._get_rotated_point((x, y), omega - self.angle)  # Or just omega if you don't rotate
+        x, y = self._get_rotated_point(
+            (x, y), omega - self.angle
+        )  # Or just omega if you don't rotate
 
         return x, y
 
@@ -84,4 +89,13 @@ class SuperellipseNibPen(OvalNibPen):
         drawPath()
         restore()
 
-        if self.trace: self.path.append([(pt[0] + p[0], pt[1] + p[1]) for p in [self._get_rotated_point(pp, self.angle) for pp in self.nib_face_path]])
+        if self.trace:
+            self.path.append(
+                [
+                    (pt[0] + p[0], pt[1] + p[1])
+                    for p in [
+                        self._get_rotated_point(pp, self.angle)
+                        for pp in self.nib_face_path
+                    ]
+                ]
+            )
