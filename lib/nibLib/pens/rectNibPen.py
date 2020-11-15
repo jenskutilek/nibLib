@@ -160,12 +160,8 @@ class RectNibPen(NibPen):
 
         path = None
 
-        # Q1 = (rho1 / pi)
-        # Q2 = (rho2 / pi)
-        # print(f"       Q1: {Q1}, Q2: {Q2}")
         Q1 = normalize_quadrant(rho1 / pi)
         Q2 = normalize_quadrant(rho2 / pi)
-        # print(f"    -> Q1: {Q1}, Q2: {Q2}")
 
         """
         Points of the nib face:
