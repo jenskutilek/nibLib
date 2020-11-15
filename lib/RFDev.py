@@ -6,7 +6,9 @@ from mojo.events import addObserver, removeObserver
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.UI import UpdateCurrentGlyphView
 
-from math import atan2, degrees, pi, radians
+from math import cos, degrees, pi, sin, radians
+import operator
+
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
 
@@ -15,13 +17,24 @@ from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, \
     rf_guide_key
 
 
+DEBUG_CENTER_POINTS = True
+DEBUG_CURVE_POINTS = True
+
+
+from beziers.path import BezierPath as SCBezierPath
+from beziers.point import Point as SCPoint
 
 from mojo.drawingTools import *
 from AppKit import NSBezierPath, NSColor
 
+import beziers
 
-from nibLib.pens.nibPen import NibPen
-from collections import namedtuple
+from nibLib.geometry import (
+    angleBetweenPoints,
+    getPointsFromCurve,
+    optimizePointPath,
+)
+from nibLib.pens.ovalNibPen import OvalNibPen
 
 from fontTools.misc.bezierTools import (
     calcCubicParameters,
@@ -32,352 +45,219 @@ from fontTools.misc.bezierTools import (
 from fontTools.misc.transform import Transform
 
 
-def normalize_quadrant(q):
-    r = 2 * q
-    nearest = round(r)
-    e = abs(nearest - r)
-    if e > epsilon:
-        return q
-    rounded = nearest * 0.5
-    return rounded
+class SuperellipseNibPen(OvalNibPen):
+    def setup_nib(self):
+        steps = 100
+        points = []
+        # Build a quarter of the superellipse with the requested number of steps
+        for i in range(0, steps + 1):
+            t = i * 0.5 * pi / steps
+            points.append(
+                (
+                    self.a * cos(t) ** (2 / self.nib_superness),
+                    self.b * sin(t) ** (2 / self.nib_superness),
+                )
+            )
+        try:
+            points = optimizePointPath(points, 0.02)
+        except:
+            print("Error optimizing point path.")
+            pass
 
+        # Just add the remaining three quarters by transposing the existing points
+        points.extend([(-p[0], p[1]) for p in reversed(points)])
+        points.extend([(p[0], -p[1]) for p in reversed(points)])
 
-def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
-    """
-    Add extrema to a cubic curve, after applying a transformation.
-    Example ::
+        self.nib_face_path = points # self.transform.transformPoints(points)
+        self.nib_face_path_transformed = points[:]
+        self.cache_angle = None
 
-        >>> # A segment in which no extrema will be added.
-        >>> split_at_extrema((297, 52), (406, 52), (496, 142), (496, 251))
-        [((297, 52), (406, 52), (496, 142), (496, 251))]
-        >>> from fontTools.misc.transform import Transform
-        >>> split_at_extrema((297, 52), (406, 52), (496, 142), (496, 251), Transform().rotate(-27))
-        [((297.0, 52.0), (84.48072108963274, -212.56513799170233), (15.572491694678519, -361.3686192413668), (15.572491694678547, -445.87035970621713)), ((15.572491694678547, -445.8703597062171), (15.572491694678554, -506.84825401175414), (51.4551516055374, -534.3422304091257), (95.14950889754756, -547.6893014808263))]
-    """
-    # Transform the points for extrema calculation;
-    # transform is expected to rotate the points by - nib angle.
-    t2, t3, t4 = transform.transformPoints([pt2, pt3, pt4])
-    # When pt1 is the current point of the path,  it is already transformed, so
-    # we keep it like it is.
-    t1 = pt1
+    def _get_rotated_point(self, pt, phi):
+        x, y = pt
+        cp = cos(phi)
+        sp = sin(phi)
+        x1 = x * cp - y * sp
+        y1 = x * sp + y * cp
 
-    (ax, ay), (bx, by), c, d = calcCubicParameters(t1, t2, t3, t4)
-    ax *= 3.0
-    ay *= 3.0
-    bx *= 2.0
-    by *= 2.0
+        return x1, y1
 
-    # vertical
-    roots = [t for t in solveQuadratic(ay, by, c[1]) if 0 < t < 1]
+    def transform_nib_path(self, alpha):
+        t = Transform().rotate(-alpha) #.rotate(self.angle)
+        self.nib_face_path_transformed = t.transformPoints(self.nib_face_path)
+        self.cache_angle = alpha
 
-    # horizontal
-    roots += [t for t in solveQuadratic(ax, bx, c[0]) if 0 < t < 1]
+    def _get_tangent_point(self, alpha):
 
-    # Use only unique roots and sort them
-    # They should be unique before, or can a root be duplicated (in h and v?)
-    roots = sorted(set(roots))
+        # Calculate the point on the superellipse
+        # at the given tangent angle alpha.
 
-    if not roots:
-        return [(t1, t2, t3, t4)]
+        # For now, we do this the pedestrian way, until I can figure out
+        # how to calculate the tangent point directly.
 
-    return splitCubicAtT(t1, t2, t3, t4, *roots)
+        if self.cache_angle != alpha:
+            self.transform_nib_path(alpha)
 
-
-
-class RectNibPen(NibPen):
-    def addPath(self, path=[]):
-        """
-        Add a path to the nib path.
-        """
-        if path:
-            path = [
-                self.transform_reverse.transformPoints(pts) for pts in path
-            ]
-            if self.trace:
-                self.path.append(path)
-            else:
-                self.drawPath(path)
-
-    def drawPath(self, path=[]):
-        """
-        Draw the points from path to a NSBezierPath.
-        """
-        subpath = NSBezierPath.alloc().init()
-        subpath.moveToPoint_(path[0][0])
-        for p in path[1:]:
-            if len(p) == 3:
-                # curve
-                A, B, C = p
-                subpath.curveToPoint_controlPoint1_controlPoint2_(C, A, B)
-            else:
-                subpath.lineToPoint_(p[0])
-
-        subpath.closePath()
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(
-            0, 0, 1, self.alpha
-        ).set()
-        subpath.stroke()
-
-    def transformPoint(self, pt, d=1):
-        return (
-            pt[0] + self.a * d,
-            pt[1] + self.b,
-        )
-
-    def transformPointHeight(self, pt, d=1):
-        return (
-            pt[0] + self.a * d,
-            pt[1] - self.b,
-        )
-
-    def transformedRect(self, P):
-        """
-        Transform a point to a rect describing the four points of the nib face.
-
-          D-------------------------C
-          |            P            |
-          A-------------------------B
-        """
-        A = self.transformPointHeight(P, -1)
-        B = self.transformPointHeight(P)
-        C = self.transformPoint(P)
-        D = self.transformPoint(P, -1)
-        return A, B, C, D
+        x, y = max(self.nib_face_path_transformed, key=operator.itemgetter(1))
+        x, y = Transform().rotate(alpha).transformPoint((x, y)) # .rotate(-self.angle)
+        return x, y
 
     def _moveTo(self, pt):
         t = self.transform.transformPoint(pt)
         self.__currentPoint = t
         self.contourStart = pt
+        if not self.trace:
+            self._draw_nib_face(pt)
 
     def _lineTo(self, pt):
-        """
-        Points of the nib face:
-
-        D1                           C1     D2                           C2
-          X-------------------------X         X-------------------------X
-          |            X            | ------> |            X            |
-          X-------------------------X         X-------------------------X
-        A1                           B1     A2                           B2
-
-        The points A2, B2, C2, D2 are the points of the nib face translated to
-        the end of the current stroke.
-        """
         t = self.transform.transformPoint(pt)
 
-        A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
-        A2, B2, C2, D2 = self.transformedRect(t)
+        # angle from the previous to the current point
+        phi = angleBetweenPoints(self.__currentPoint, t)
+        # print(u"%0.2f°: %s -> %s" % (degrees(phi), self.__currentPoint, pt))
 
-        x1, y1 = self.__currentPoint
-        x2, y2 = t
+        x, y = self._get_tangent_point(phi)
 
-        # Angle between nib and path
-        rho = atan2(y2 - y1, x2 - x1)
+        p0 = (self.__currentPoint[0] + x, self.__currentPoint[1] + y)
+        p1 = (t[0] + x, t[1] + y)
+        p2 = (t[0] - x, t[1] - y)
+        p3 = (self.__currentPoint[0] - x, self.__currentPoint[1] - y)
 
-        path = None
-        Q = rho / pi
-
-        if 0 <= Q < 0.5:
-            path = ((A1,), (B1,), (B2,), (C2,), (D2,), (D1,))
-
-        elif 0.5 <= Q <= 1:
-            path = ((A1,), (B1,), (C1,), (C2,), (D2,), (A2,))
-
-        elif -1 <= Q < -0.5:
-            path = ((A2,), (B2,), (B1,), (C1,), (D1,), (D2,))
-
-        elif -0.5 <= Q < 0:
-            path = ((A2,), (B2,), (C2,), (C1,), (D1,), (A1,))
-
-        self.addPath(path)
+        self.addPath([[p0], [p1], [p2], [p3]])
+        self._draw_nib_face(pt)
 
         self.__currentPoint = t
 
     def _curveToOne(self, pt1, pt2, pt3):
-        # Insert extrema at angle
-        segments = split_at_extrema(
-            self.__currentPoint, pt1, pt2, pt3, transform=self.transform
-        )
-        for segment in segments:
-            pt0, pt1, pt2, pt3 = segment
-            self._curveToOneNoExtrema(pt1, pt2, pt3)
 
-    def _curveToOneNoExtrema(self, pt1, pt2, pt3):
-        print("_curveToOneNoExtrema", pt1, pt2, pt3)
+        # Break curve into line segments
+        points = getPointsFromCurve((self.__currentPoint, pt1, pt2, pt3), 5)
 
-        A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
+        # Draw points of center line
+        if DEBUG_CENTER_POINTS:
+            save()
+            stroke(None)
+            strokeWidth(0)
+            fill(0, 0, 0, self.alpha)
+            for x, y in points:
+                rect(x - 1, y - 1, 2, 2)
+            restore()
 
-        # Control points
-        Ac1, Bc1, Cc1, Dc1 = self.transformedRect(pt1)
-        Ac2, Bc2, Cc2, Dc2 = self.transformedRect(pt2)
+        # Calculate angles between points
 
-        # End points
-        A2, B2, C2, D2 = self.transformedRect(pt3)
+        # The first angle is that of the curve start point to bcp1
+        angles = [angleBetweenPoints(self.__currentPoint, pt1)]
 
-        # Angle at start of curve
-        x0, y0 = self.__currentPoint
-        x1, y1 = pt1
-        rho1 = atan2(y1 - y0, x1 - x0)
+        for i in range(1, len(points)):
+            phi = angleBetweenPoints(points[i - 1], points[i])
+            angles.append(phi)
 
-        # Angle at end of curve
-        x2, y2 = pt2
-        x3, y3 = pt3
+        # The last angle is that of bcp2 point to the curve end point
+        angles.append(angleBetweenPoints(pt2, pt3))
 
-        rho2 = atan2(y3 - y2, x3 - x2)
+        # Find points on ellipse for each angle
+        inner = []
+        outer = []
 
-        path = None
+        # stroke(None)
 
-        Q1 = (rho1 / pi)
-        Q2 = (rho2 / pi)
-        print(f"       Q1: {Q1}, Q2: {Q2}")
-        Q1 = normalize_quadrant(rho1 / pi)
-        Q2 = normalize_quadrant(rho2 / pi)
-        print(f"    -> Q1: {Q1}, Q2: {Q2}")
+        for i, p in enumerate(points):
+            pt0 = self._get_tangent_point(angles[i] - self.angle)
 
-        """
-        Points of the nib face:
+            x, y = self._get_rotated_tangent_point(pt0)
+            outer.append((p[0] + x, p[1] + y))
+            if DEBUG_CURVE_POINTS:
+                # Draw outer points in red
+                save()
+                fill(1, 0, 0, self.alpha)
+                rect(p[0] + x - 1, p[1] + y - 1, 2, 2)
+                restore()
 
-        D1                           C1     D2                           C2
-          X-------------------------X         X-------------------------X
-          |            X            | ------> |            X            |
-          X-------------------------X         X-------------------------X
-        A1                           B1     A2                           B2
+            x, y = self._get_rotated_tangent_point((-pt0[0], -pt0[1]))
+            inner.append((p[0] + x, p[1] + y))
+            if DEBUG_CURVE_POINTS:
+                # Draw inner points in green
+                save()
+                fill(0, 0.8, 0, self.alpha)
+                rect(p[0] + x - 1, p[1] + y - 1, 2, 2)
+                restore()
 
-        The points A2, B2, C2, D2 are the points of the nib face translated to
-        the end of the current stroke.
-        """
-        if Q1 == 0:
-            if Q2 == 0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-            elif 0 < Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0.5 <= Q2 <= 1:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif -0.5 <= Q2 < 0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
+        if inner and outer:
 
-        elif 0 < Q1 < 0.5:
-            if Q2 == 0:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0 <= Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0.5 <= Q2 <= 1:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif -1 < Q2 < -0.5:
-                pass
-            elif -0.5 <= Q2 < 0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-        
-        elif Q1 == 0.5:
-            if 0 <= Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif Q2 == 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0.5 <= Q2 <= 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == -1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
+            inner = optimizePointPath(inner, 0.3)
+            outer = optimizePointPath(outer, 0.3)
 
-        elif 0.5 < Q1 < 1:
-            if 0 <= Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif 0.5 <= Q2 <= 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == -1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-
-        elif Q1 == 1:
-            if 0 <= Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif Q2 == 0.5:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif 0.5 < Q2 < 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == -1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-
-        elif Q1 == -1:
-            if 0 <= Q2 < 0.5:
-                path = ((A1,), (B1,), (Bc1, Bc2, B2), (C2,), (D2,), (Dc2, Dc1, D1))
-            elif Q2 == 0.5:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif 0.5 < Q2 < 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == 1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif Q2 == -1:
-                path = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-        
-        elif -1 < Q1 < -0.5:
-            if 0 <= Q2 < 0.5:
-                print("Crash")
-            elif 0.5 <= Q2 <= 1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif Q2 == -1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-
-        elif Q1 == -0.5:
-            if Q2 == -1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif Q2 == -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-            elif Q2 == 0.0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-            elif Q2 == 1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-
-        elif -0.5 <= Q1 < 0:
-            if 0 <= Q2 < 0.5:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-            elif 0.5 <= Q2 <= 1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif Q2 == -1:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -1 < Q2 < -0.5:
-                path = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
-            elif -0.5 <= Q2 < 0:
-                path = ((B2,), (C2,), (Cc2, Cc1, C1), (D1,), (A1,), (Ac1, Ac2, A2))
-
-
-        self.addPath(path)
+            self.addPath(optimizePointPath(outer + inner, 1))
+            self._draw_nib_face(pt3)
 
         self.__currentPoint = pt3
 
     def _closePath(self):
-        # Glyphs calls closePath though it is not really needed there ...?
-        self._lineTo(self.contourStart)
         self.__currentPoint = None
 
     def _endPath(self):
-        if self.__currentPoint:
-            # A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
-            # self.addPath(((A1,), (B1,), (C1,), (D1,)))
-            self.__currentPoint = None
+        self.__currentPoint = None
+
+    def _draw_nib_face(self, pt):
+        if self.trace:
+            points = [
+                (pt[0] + p[0], pt[1] + p[1])
+                for p in [
+                    self._get_rotated_point(pp, self.angle)
+                    for pp in self.nib_face_path
+                ]
+            ]
+            fitted_points = SCBezierPath().fromPoints(
+                [SCPoint(p[0], p[1]) for p in points], error=50.0, cornerTolerance=20.0, maxSegments=20
+            )
+            self.path.append(fitted_points)
+        else:
+            save()
+            translate(pt[0], pt[1])
+            rotate(degrees(self.angle))
+            newPath()
+            moveTo(self.nib_face_path[0])
+            for p in self.nib_face_path[1:]:
+                lineTo(p)
+            closePath()
+            drawPath()
+            restore()
+
+    def trace_path(self, out_glyph):
+        from mojo.roboFont import RGlyph
+
+        tmp = RGlyph()
+        p = tmp.getPen()
+        first = True
+        for path in self.path:
+            if first:
+                first = False
+            else:
+                p.closePath()
+                out_glyph.appendGlyph(tmp)
+                tmp.clear()
+            p.moveTo(self.round_pt(path[0][0]))
+            for segment in path[1:]:
+                if len(segment) == 1:
+                    p.lineTo(self.round_pt(segment[0]))
+                elif len(segment) == 3:
+                    p.curveTo(
+                        self.round_pt(segment[0]),
+                        self.round_pt(segment[1]),
+                        self.round_pt(segment[2]),
+                    )
+
+                else:
+                    print("Unknown segment type:", segment)
+        p.closePath()
+        # tmp.correctDirection()
+        out_glyph.appendGlyph(tmp)
+        # out_glyph.removeOverlap()
+        # out_glyph.removeOverlap()
+        out_glyph.update()
 
 
 nib_models = {
-    "Rectangle"   : RectNibPen,
+    "Superellipse"   : SuperellipseNibPen,
 }
 
 
@@ -395,7 +275,7 @@ nib_models = {
 class JKNib(BaseWindowController):
 
     def __init__(self, glyph, font):
-        self.model = "Rectangle"
+        self.model = "Superellipse"
         self.angle = radians(30)
         self.width = 60
         self.height = 2
@@ -574,7 +454,10 @@ class JKNib(BaseWindowController):
             if model == self.model:
                 break
         self.w.model_select.set(i)
-        self.nib_pen = nib_models[self.model]
+        if self.model in nib_models:
+            self.nib_pen = nib_models[self.model]
+        else:
+            self.nib_pen = nib_models[list(nib_models.keys())[0]]
         self.w.angle_slider.set(self.angle)
         self.w.angle_text.set("%i" % int(round(degrees(self.angle))))
         self.w.width_slider.set(self.width)
