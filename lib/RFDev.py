@@ -86,9 +86,6 @@ class SuperellipseNibPen(OvalNibPen):
     def transform_nib_path(self, alpha):
         t = Transform().rotate(-alpha)
         self.nib_face_path_transformed = t.transformPoints(self.nib_face_path)
-        self.nib_drawing_path_transformed = []
-        for seg in self.nib_drawing_path:
-            self.nib_drawing_path_transformed.append(t.transformPoints(seg))
         self.cache_angle = alpha
 
     def _get_tangent_point(self, alpha):
@@ -215,14 +212,15 @@ class SuperellipseNibPen(OvalNibPen):
 
     def _draw_nib_face(self, pt):
         if self.trace:
-            points = [
-                (pt[0] + p[0], pt[1] + p[1])
-                for p in [
-                    self._get_rotated_point(pp, self.angle)
-                    for pp in self.nib_face_path
-                ]
-            ]
-            self.path.append(self._curve_from_lines(points))
+            x, y = pt
+            nib = []
+            t = Transform().translate(x, y).rotate(self.angle)
+            for seg in self.nib_drawing_path:
+                seg_path = []
+                for p in seg:
+                    seg_path.append(t.transformPoint(p))
+                nib.append(seg_path)
+            self.path.append(nib)
         else:
             save()
             translate(pt[0], pt[1])
