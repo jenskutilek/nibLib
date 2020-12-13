@@ -84,7 +84,7 @@ class SuperellipseNibPen(OvalNibPen):
         return x1, y1
 
     def transform_nib_path(self, alpha):
-        t = Transform().rotate(-alpha) #.rotate(self.angle)
+        t = Transform().rotate(-alpha)
         self.nib_face_path_transformed = t.transformPoints(self.nib_face_path)
         self.nib_drawing_path_transformed = []
         for seg in self.nib_drawing_path:
