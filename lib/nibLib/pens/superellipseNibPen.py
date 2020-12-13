@@ -219,11 +219,14 @@ class SuperellipseNibPen(OvalNibPen):
             restore()
     
     def _curve_from_lines(self, point_tuple_list: list) -> list:
+        error=50.0
+        cornerTolerance=20.0
+        maxSegments=20
         curve_points = SCBezierPath().fromPoints(
             [SCPoint(p[0], p[1]) for p in point_tuple_list],
-            error=TRACE_ERROR,
-            cornerTolerance=TRACE_CORNER_TOLERANCE,
-            maxSegments=TRACE_MAXIMUM_SEGMENTS,
+            error=1.0,
+            cornerTolerance=1.0,
+            maxSegments=10000,
         )
 
         # Reconvert the BezierPath segments to our segment type
