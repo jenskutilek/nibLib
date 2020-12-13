@@ -17,8 +17,8 @@ from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, \
     rf_guide_key
 
 
-DEBUG_CENTER_POINTS = True
-DEBUG_CURVE_POINTS = True
+DEBUG_CENTER_POINTS = False
+DEBUG_CURVE_POINTS = False
 
 
 from beziers.path import BezierPath as SCBezierPath
@@ -68,8 +68,10 @@ class SuperellipseNibPen(OvalNibPen):
         points.extend([(-p[0], p[1]) for p in reversed(points)])
         points.extend([(p[0], -p[1]) for p in reversed(points)])
 
-        self.nib_face_path = points # self.transform.transformPoints(points)
-        self.nib_face_path_transformed = points[:]
+        self.nib_face_path = points
+        self.nib_face_path_transformed = points.copy()
+        self.nib_drawing_path = self._curve_from_lines(points)
+        self.nib_drawing_path_transformed = self.nib_drawing_path.copy()
         self.cache_angle = None
 
     def _get_rotated_point(self, pt, phi):
@@ -84,6 +86,9 @@ class SuperellipseNibPen(OvalNibPen):
     def transform_nib_path(self, alpha):
         t = Transform().rotate(-alpha) #.rotate(self.angle)
         self.nib_face_path_transformed = t.transformPoints(self.nib_face_path)
+        self.nib_drawing_path_transformed = []
+        for seg in self.nib_drawing_path:
+            self.nib_drawing_path_transformed.append(t.transformPoints(seg))
         self.cache_angle = alpha
 
     def _get_tangent_point(self, alpha):
@@ -105,8 +110,7 @@ class SuperellipseNibPen(OvalNibPen):
         t = self.transform.transformPoint(pt)
         self.__currentPoint = t
         self.contourStart = pt
-        if not self.trace:
-            self._draw_nib_face(pt)
+        self._draw_nib_face(pt)
 
     def _lineTo(self, pt):
         t = self.transform.transformPoint(pt)
@@ -122,76 +126,88 @@ class SuperellipseNibPen(OvalNibPen):
         p2 = (t[0] - x, t[1] - y)
         p3 = (self.__currentPoint[0] - x, self.__currentPoint[1] - y)
 
-        self.addPath([[p0], [p1], [p2], [p3]])
+        self.addPath([[p0], [p3], [p2], [p1]])
         self._draw_nib_face(pt)
 
         self.__currentPoint = t
 
     def _curveToOne(self, pt1, pt2, pt3):
+        if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
+            save()
+        
+        t1 = self.transform.transformPoint(pt1)
+        t2 = self.transform.transformPoint(pt2)
+        t3 = self.transform.transformPoint(pt3)
 
         # Break curve into line segments
-        points = getPointsFromCurve((self.__currentPoint, pt1, pt2, pt3), 5)
+        points = getPointsFromCurve((self.__currentPoint, t1, t2, t3), 5)
 
         # Draw points of center line
         if DEBUG_CENTER_POINTS:
-            save()
             stroke(None)
             strokeWidth(0)
             fill(0, 0, 0, self.alpha)
-            for x, y in points:
+            for p in points:
+                x, y = self.transform_reverse.transformPoint(p)
                 rect(x - 1, y - 1, 2, 2)
-            restore()
 
         # Calculate angles between points
 
         # The first angle is that of the curve start point to bcp1
-        angles = [angleBetweenPoints(self.__currentPoint, pt1)]
+        angles = [angleBetweenPoints(self.__currentPoint, t1)]
 
         for i in range(1, len(points)):
             phi = angleBetweenPoints(points[i - 1], points[i])
             angles.append(phi)
 
         # The last angle is that of bcp2 point to the curve end point
-        angles.append(angleBetweenPoints(pt2, pt3))
+        angles.append(angleBetweenPoints(t2, t3))
 
         # Find points on ellipse for each angle
         inner = []
         outer = []
 
         # stroke(None)
-
         for i, p in enumerate(points):
-            pt0 = self._get_tangent_point(angles[i] - self.angle)
+            x, y = self._get_tangent_point(angles[i])
 
-            x, y = self._get_rotated_tangent_point(pt0)
-            outer.append((p[0] + x, p[1] + y))
-            if DEBUG_CURVE_POINTS:
+            pp = self._get_rotated_point((p[0] + x, p[1] + y), self.angle)
+            outer.append(pp)
+
+            if not self.trace and DEBUG_CURVE_POINTS:
                 # Draw outer points in red
-                save()
                 fill(1, 0, 0, self.alpha)
-                rect(p[0] + x - 1, p[1] + y - 1, 2, 2)
-                restore()
+                pr = self.transform_reverse.transformPoint((p[0] + x, p[1] + y))
+                rect(pr[0] - 1, pr[1] - 1, 2, 2)
 
-            x, y = self._get_rotated_tangent_point((-pt0[0], -pt0[1]))
-            inner.append((p[0] + x, p[1] + y))
-            if DEBUG_CURVE_POINTS:
+            pp = self._get_rotated_point((p[0] - x, p[1] - y), self.angle)
+            inner.append(pp)
+            if not self.trace and DEBUG_CURVE_POINTS:
                 # Draw inner points in green
-                save()
                 fill(0, 0.8, 0, self.alpha)
-                rect(p[0] + x - 1, p[1] + y - 1, 2, 2)
-                restore()
+                pr = self.transform_reverse.transformPoint((p[0] - x, p[1] - y))
+                rect(pr[0] - 1, pr[1] - 1, 2, 2)
 
         if inner and outer:
-
-            inner = optimizePointPath(inner, 0.3)
-            outer = optimizePointPath(outer, 0.3)
-
-            self.addPath(optimizePointPath(outer + inner, 1))
+            if self.trace:
+                outer.reverse()
+                outer = self._curve_from_lines(outer)
+                inner = self._curve_from_lines(inner)
+                self.path.append(outer + inner)
+            else:
+                inner = optimizePointPath(inner, 0.3)
+                outer = optimizePointPath(outer, 0.3)
+                outer.reverse()
+                optimized = optimizePointPath(outer + inner, 1)
+                self.addPath([[self.transform.transformPoint(o)] for o in optimized])
             self._draw_nib_face(pt3)
 
-        self.__currentPoint = pt3
+        self.__currentPoint = t3
+        if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
+            restore()
 
     def _closePath(self):
+        self.lineTo(self.contourStart)
         self.__currentPoint = None
 
     def _endPath(self):
@@ -206,10 +222,7 @@ class SuperellipseNibPen(OvalNibPen):
                     for pp in self.nib_face_path
                 ]
             ]
-            fitted_points = SCBezierPath().fromPoints(
-                [SCPoint(p[0], p[1]) for p in points], error=50.0, cornerTolerance=20.0, maxSegments=20
-            )
-            self.path.append(fitted_points)
+            self.path.append(self._curve_from_lines(points))
         else:
             save()
             translate(pt[0], pt[1])
@@ -221,6 +234,31 @@ class SuperellipseNibPen(OvalNibPen):
             closePath()
             drawPath()
             restore()
+    
+    def _curve_from_lines(self, point_tuple_list: list) -> list:
+        error=50.0
+        cornerTolerance=20.0
+        maxSegments=20
+        curve_points = SCBezierPath().fromPoints(
+            [SCPoint(p[0], p[1]) for p in point_tuple_list],
+            error=1.0,
+            cornerTolerance=1.0,
+            maxSegments=10000,
+        )
+
+        # Reconvert the BezierPath segments to our segment type
+        point_tuple_list = []
+        first = True
+        for segment in curve_points.asSegments():
+            segment_tuple = []
+            if first:
+                # For the first segment, add the move point
+                p = segment[0]
+                point_tuple_list.append([(p.x, p.y)])
+            for p in segment[1:]:
+                segment_tuple.append((p.x, p.y))
+            point_tuple_list.append(segment_tuple)
+        return point_tuple_list
 
     def trace_path(self, out_glyph):
         from mojo.roboFont import RGlyph
@@ -411,7 +449,8 @@ class JKNib(BaseWindowController):
         )
 
         self.envSpecificInit()
-        # self._update_ui()
+        # self.check_secondary_ui()
+        self._update_ui()
         # self.w.trace_outline.enable(False)
         self.w.open()
         self._update_current_glyph_view()
