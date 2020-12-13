@@ -32,6 +32,16 @@ def distanceBetweenPoints(p0, p1, doRound=False):
         return d
 
 
+def halfPoint(p0, p1, doRound=False):
+    x0, y0 = p0
+    x1, y1 = p1
+    xh = .5 * (x0 + x1)
+    yh = .5 * (y0 + y1)
+    if doRound:
+        return int(round(xh)), int(round(yh))
+    return xh, yh
+
+
 class Triangle(object):
     def __init__(self, A, B, C):
         self.A = A
