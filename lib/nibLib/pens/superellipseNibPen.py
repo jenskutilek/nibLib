@@ -85,7 +85,9 @@ class SuperellipseNibPen(OvalNibPen):
             self.transform_nib_path(alpha)
 
         x, y = max(self.nib_face_path_transformed, key=operator.itemgetter(1))
-        x, y = Transform().rotate(alpha).transformPoint((x, y)) # .rotate(-self.angle)
+        x, y = (
+            Transform().rotate(alpha).transformPoint((x, y))
+        )  # .rotate(-self.angle)
         return x, y
 
     def _moveTo(self, pt):
@@ -116,7 +118,7 @@ class SuperellipseNibPen(OvalNibPen):
     def _curveToOne(self, pt1, pt2, pt3):
         if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
             save()
-        
+
         t1 = self.transform.transformPoint(pt1)
         t2 = self.transform.transformPoint(pt2)
         t3 = self.transform.transformPoint(pt3)
@@ -159,7 +161,9 @@ class SuperellipseNibPen(OvalNibPen):
             if not self.trace and DEBUG_CURVE_POINTS:
                 # Draw outer points in red
                 fill(1, 0, 0, self.alpha)
-                pr = self.transform_reverse.transformPoint((p[0] + x, p[1] + y))
+                pr = self.transform_reverse.transformPoint(
+                    (p[0] + x, p[1] + y)
+                )
                 rect(pr[0] - 1, pr[1] - 1, 2, 2)
 
             pp = self._get_rotated_point((p[0] - x, p[1] - y), self.angle)
@@ -167,7 +171,9 @@ class SuperellipseNibPen(OvalNibPen):
             if not self.trace and DEBUG_CURVE_POINTS:
                 # Draw inner points in green
                 fill(0, 0.8, 0, self.alpha)
-                pr = self.transform_reverse.transformPoint((p[0] - x, p[1] - y))
+                pr = self.transform_reverse.transformPoint(
+                    (p[0] - x, p[1] - y)
+                )
                 rect(pr[0] - 1, pr[1] - 1, 2, 2)
 
         if inner and outer:
@@ -181,7 +187,9 @@ class SuperellipseNibPen(OvalNibPen):
                 outer = optimizePointPath(outer, 0.3)
                 outer.reverse()
                 optimized = optimizePointPath(outer + inner, 1)
-                self.addPath([[self.transform.transformPoint(o)] for o in optimized])
+                self.addPath(
+                    [[self.transform.transformPoint(o)] for o in optimized]
+                )
             self._draw_nib_face(pt3)
 
         self.__currentPoint = t3
@@ -217,11 +225,11 @@ class SuperellipseNibPen(OvalNibPen):
             closePath()
             drawPath()
             restore()
-    
+
     def _curve_from_lines(self, point_tuple_list: list) -> list:
-        error=50.0
-        cornerTolerance=20.0
-        maxSegments=20
+        error = 50.0
+        cornerTolerance = 20.0
+        maxSegments = 20
         curve_points = SCBezierPath().fromPoints(
             [SCPoint(p[0], p[1]) for p in point_tuple_list],
             error=1.0,
