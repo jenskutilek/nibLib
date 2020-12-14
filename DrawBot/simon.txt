@@ -1,0 +1,7 @@
+https://twitter.com/simoncozens/status/925601356634767361
+
+That last operation (cot^-1) is arccot, also known as arctan(1/θ). In python, you'll want math.atan2(θ,1).
+
+And so I *think* the relevant Python code is
+atan2(1,((-b/a)**(-1/(2-2/n)) * tan(alpha) ** (1/(2-2/n))).real)
+(Note the .real!)
