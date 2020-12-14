@@ -1,6 +1,8 @@
 from __future__ import division, print_function
 
+from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
+from math import pi
 
 try:
     from mojo.drawingTools import stroke, strokeWidth
@@ -11,10 +13,17 @@ except ImportError:
 class NibPen(BasePen):
     def __init__(
         self, glyphSet, angle, width, height, show_nib_faces=False, alpha=0.2,
-        nib_superness=2.5, trace=False
+        nib_superness=2.5, trace=False, round_coords=False
     ):
         BasePen.__init__(self, glyphSet)
         self.angle = angle
+        if self.angle > pi:
+            self.angle -= pi
+        elif self.angle < -pi:
+            self.angle += pi
+        # Store a transform, used for calculating extrema in some nib models
+        self.transform = Transform().rotate(-self.angle)
+        self.transform_reverse = Transform().rotate(self.angle)
         self.width = width
         self.height = height
         self.a = 0.5 * width
@@ -24,6 +33,7 @@ class NibPen(BasePen):
         self.alpha = alpha
         self.nib_superness = nib_superness
         self.trace = trace
+        self.round_coords = round_coords
 
         # Initialize the nib face path
         # This is only needed for more complex shapes
@@ -35,6 +45,13 @@ class NibPen(BasePen):
         if self.color:
             stroke(0, 0, 0, 0.5)
             strokeWidth(0.1)
+
+    def round_pt(self, pt):
+        # Round a point based on self.round_coords
+        if not self.round_coords:
+            return pt
+        x, y = pt
+        return round(x), round(y)
 
     def setup_nib(self):
         pass
@@ -56,33 +73,17 @@ class NibPen(BasePen):
                 first = False
             else:
                 p.closePath()
-                # tmp.correctDirection()
                 out_glyph.appendGlyph(tmp)
                 tmp.clear()
-            p.moveTo((
-                int(round(path[0][0])),
-                int(round(path[0][1]))
-            ))
+            p.moveTo(self.round_pt(path[0][0]))
             for segment in path[1:]:
-                if len(segment) == 2:
-                    p.lineTo((
-                        int(round(segment[0])),
-                        int(round(segment[1]))
-                    ))
+                if len(segment) == 1:
+                    p.lineTo(self.round_pt(segment[0]))
                 elif len(segment) == 3:
                     p.curveTo(
-                        (
-                            int(round(segment[0][0])),
-                            int(round(segment[0][1]))
-                        ),
-                        (
-                            int(round(segment[1][0])),
-                            int(round(segment[1][1]))
-                        ),
-                        (
-                            int(round(segment[2][0])),
-                            int(round(segment[2][1]))
-                        ),
+                        self.round_pt(segment[0]),
+                        self.round_pt(segment[1]),
+                        self.round_pt(segment[2]),
                     )
 
                 else:

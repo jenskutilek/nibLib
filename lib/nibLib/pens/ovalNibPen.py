@@ -9,13 +9,15 @@ except ImportError:
     from GlyphsApp.drawingTools import *
 
 from nibLib import DEBUG_CENTER_POINTS, DEBUG_CURVE_POINTS
-from nibLib.geometry import angleBetweenPoints, getPointsFromCurve, \
-    optimizePointPath
+from nibLib.geometry import (
+    angleBetweenPoints,
+    getPointsFromCurve,
+    optimizePointPath,
+)
 from nibLib.pens.rectNibPen import RectNibPen
 
 
 class OvalNibPen(RectNibPen):
-
     def _get_tangent_point(self, alpha):
 
         # Calculate the point on the ellipse
@@ -42,12 +44,7 @@ class OvalNibPen(RectNibPen):
         # stroke(None)
         translate(pt[0], pt[1])
         rotate(degrees(self.angle))
-        oval(
-            -self.a,
-            -self.b,
-            self.width,
-            self.height
-        )
+        oval(-self.a, -self.b, self.width, self.height)
         restore()
 
     def _moveTo(self, pt):
@@ -69,10 +66,10 @@ class OvalNibPen(RectNibPen):
             save()
             strokeWidth(0)
             stroke(None)
-            fill(0,0,1)
+            fill(0, 0, 1)
             translate(self.__currentPoint[0], self.__currentPoint[1])
-            rect(x-0.5, y-0.5, 1, 1)
-            #text("%i|%i %i" % (pt0[0], pt0[1], degrees(phi)), (0, 0))
+            rect(x - 0.5, y - 0.5, 1, 1)
+            # text("%i|%i %i" % (pt0[0], pt0[1], degrees(phi)), (0, 0))
             restore()
         # fill(1, 0, 0, self.alpha)
         # stroke(None)
@@ -107,7 +104,7 @@ class OvalNibPen(RectNibPen):
             strokeWidth(0)
             fill(0, 0, 0, self.alpha)
             for x, y in points:
-                rect(x-1, y-1, 2, 2)
+                rect(x - 1, y - 1, 2, 2)
             restore()
 
         # Calculate angles between points
@@ -116,7 +113,7 @@ class OvalNibPen(RectNibPen):
         angles = [angleBetweenPoints(self.__currentPoint, pt1)]
 
         for i in range(1, len(points)):
-            phi = angleBetweenPoints(points[i-1], points[i])
+            phi = angleBetweenPoints(points[i - 1], points[i])
             angles.append(phi)
 
         # The last angle is that of bcp2 point to the curve end point
