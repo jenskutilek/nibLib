@@ -57,6 +57,7 @@ class SuperellipseNibPen(OvalNibPen):
         self.nib_face_path = points
         self.nib_face_path_transformed = points.copy()
         self.nib_drawing_path = self._curve_from_lines(points)
+        self.nib_drawing_path_transformed = self.nib_drawing_path.copy()
         self.cache_angle = None
 
     def _get_rotated_point(self, pt, phi):
