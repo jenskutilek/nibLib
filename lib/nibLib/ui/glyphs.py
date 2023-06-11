@@ -44,3 +44,31 @@ class JKNibGlyphs(JKNib):
         currentTabView = Glyphs.font.currentTab
         if currentTabView:
             currentTabView.graphicView().setNeedsDisplay_(True)
+
+    def _setup_draw(self, preview=False):
+        if preview:
+            fill(0)
+            stroke(0)
+        else:
+            fill(0.6, 0.7, 0.9, 0.5)
+            stroke(0.6, 0.7, 0.9)
+        # strokeWidth(self.height)
+        # strokeWidth(1)
+        strokeWidth(0)
+        stroke(None)
+        lineJoin(self.line_join)
+
+    def _draw_preview_glyph(self, preview=False):
+        if self.guide_layer is None:
+            self._update_layers()
+            return
+        glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
+        save()
+        self._setup_draw(preview=preview)
+        # TODO: Reuse pen object.
+        # Needs modifications to the pens before possible.
+        p = self.nib_pen(
+            self.font, self.angle, self.width, self.height, self._draw_nib_faces, nib_superness=self.superness
+        )
+        glyph.draw(p)
+        restore()
