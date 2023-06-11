@@ -56,6 +56,7 @@ class SuperellipseNibPen(OvalNibPen):
 
         self.nib_face_path = points
         self.nib_face_path_transformed = points.copy()
+        self.setup_nib_face_path()
         self.nib_drawing_path = self._curve_from_lines(points)
         self.nib_drawing_path_transformed = self.nib_drawing_path.copy()
         self.cache_angle = None
@@ -196,6 +197,15 @@ class SuperellipseNibPen(OvalNibPen):
     def _endPath(self):
         self.__currentPoint = None
 
+    def setup_nib_face_path(self):
+        # Build a bezier path to more easily draw the nib face
+        points = self.nib_face_path
+        nib = self.nib_face_bezier_path = NSBezierPath.alloc().init()
+        nib.moveToPoint_(points[0])
+        for p in points[1:]:
+            nib.lineToPoint_(p)
+        nib.closePath()
+
     def _draw_nib_face(self, pt):
         if self.trace:
             x, y = pt
@@ -211,12 +221,7 @@ class SuperellipseNibPen(OvalNibPen):
             save()
             translate(pt[0], pt[1])
             rotate(degrees(self.angle))
-            newPath()
-            moveTo(self.nib_face_path[0])
-            for p in self.nib_face_path[1:]:
-                lineTo(p)
-            closePath()
-            drawPath()
+            self.nib_face_bezier_path.stroke()
             restore()
 
     def _curve_from_lines(self, point_tuple_list: list) -> list:
