@@ -148,6 +148,7 @@ class JKNib(BaseWindowController):
         self.w.trace_outline = vanilla.Button((col, y, 120, 20), title="Trace Outline", callback=self._trace_callback)
 
         self.envSpecificInit()
+        self._update_layers()
         # self._update_ui()
         # self.w.trace_outline.enable(False)
         self.w.open()
@@ -171,15 +172,8 @@ class JKNib(BaseWindowController):
         pass
 
     def _update_layers(self):
-        if self.font is None:
-            self.font_layers = []
-        else:
-            self.font_layers = self.getLayerList()
-        self.w.guide_select.setItems(self.font_layers)
-        if self.font_layers:
-            last_layer = len(self.font_layers) - 1
-            self.w.guide_select.set(last_layer)
-            self.guide_layer = self.font_layers[last_layer]
+        # Override with editor-specific layer update call
+        pass
 
     def getLayerList(self):
         return []
