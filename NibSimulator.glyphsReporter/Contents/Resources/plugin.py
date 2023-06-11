@@ -3,7 +3,7 @@ from GlyphsApp import *
 from GlyphsApp.plugins import *
 from GlyphsApp.drawingTools import *
 
-from nibLib.ui.glyphs import JKNib
+from nibLib.ui.glyphs import JKNibGlyphs
 
 
 class NibSimulator(ReporterPlugin):
@@ -68,7 +68,7 @@ class NibSimulator(ReporterPlugin):
     #             component.bezierPath.fill()
 
     def openSettingsWindow_(self, sender):
-        self.w = JKNib(None, None)
+        self.w = JKNibGlyphs(None, None)
 
     # @objc.python_method
     # def conditionalContextMenus(self):
