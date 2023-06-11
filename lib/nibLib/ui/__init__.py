@@ -55,8 +55,8 @@ class JKNib(BaseWindowController):
         self.w.angle_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=0,
-            maxValue=pi,
-            value=radians(30),
+            maxValue=180,
+            value=30,
             tickMarkCount=7,
             callback=self._nib_angle_callback,
             stopOnTickMarks=False,
