@@ -46,6 +46,7 @@ class JKNibGlyphs(JKNib):
             currentTabView.graphicView().setNeedsDisplay_(True)
 
     def _setup_draw(self, preview=False):
+        # FIXME: Call this from the Glyphs plugin or move the code there
         if preview:
             fill(0)
             stroke(0)
