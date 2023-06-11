@@ -3,21 +3,28 @@ from math import degrees, pi, radians
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
 
-from nibLib import DEBUG, def_angle_key, def_width_key, def_height_key, \
-    def_local_key, def_guide_key, def_super_key, def_model_key, \
-    rf_guide_key
+from nibLib import (
+    DEBUG,
+    def_angle_key,
+    def_width_key,
+    def_height_key,
+    def_local_key,
+    def_guide_key,
+    def_super_key,
+    def_model_key,
+    rf_guide_key,
+)
 from nibLib.pens import nib_models
 
 
 class JKNib(BaseWindowController):
-
     def __init__(self, glyph, font):
         self.model = "Superellipse"
         self.angle = radians(30)
         self.width = 60
         self.height = 2
         self.superness = 2.5
-        self.line_join = "round" # bevel, round
+        self.line_join = "round"  # bevel, round
         self.guide_layer = None
         self.nib_pen = nib_models[self.model]
 
@@ -36,7 +43,7 @@ class JKNib(BaseWindowController):
         col = 60
         y = 10
 
-        self.w.model_label  = vanilla.TextBox((8, y, col-8, 20), "Model")
+        self.w.model_label = vanilla.TextBox((8, y, col - 8, 20), "Model")
         self.w.model_select = vanilla.PopUpButton(
             (col, y, -48, 20),
             nib_models.keys(),
@@ -44,7 +51,7 @@ class JKNib(BaseWindowController):
         )
 
         y += 32
-        self.w.angle_label  = vanilla.TextBox((8, y, col-8, 20), "Angle")
+        self.w.angle_label = vanilla.TextBox((8, y, col - 8, 20), "Angle")
         self.w.angle_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=0,
@@ -58,7 +65,7 @@ class JKNib(BaseWindowController):
 
         y += 24
 
-        self.w.width_label = vanilla.TextBox((8, y, col-8, 20), "Width")
+        self.w.width_label = vanilla.TextBox((8, y, col - 8, 20), "Width")
         self.w.width_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=0,
@@ -72,7 +79,7 @@ class JKNib(BaseWindowController):
 
         y += 24
 
-        self.w.height_label = vanilla.TextBox((8, y, col-8, 20), "Height")
+        self.w.height_label = vanilla.TextBox((8, y, col - 8, 20), "Height")
         self.w.height_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=1,
@@ -86,7 +93,7 @@ class JKNib(BaseWindowController):
 
         y += 24
 
-        self.w.superness_label = vanilla.TextBox((8, y, col-8, 20), "Super")
+        self.w.superness_label = vanilla.TextBox((8, y, col - 8, 20), "Super")
         self.w.superness_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=1.01,
@@ -94,13 +101,10 @@ class JKNib(BaseWindowController):
             value=self.superness,
             callback=self._nib_superness_callback,
         )
-        self.w.superness_text = vanilla.TextBox(
-            (-40, y, -8, 20),
-            "%0.2f" % self.superness
-        )
+        self.w.superness_text = vanilla.TextBox((-40, y, -8, 20), "%0.2f" % self.superness)
 
         y += 32
-        self.w.guide_label = vanilla.TextBox((8, y, col-8, 20), "Guide")
+        self.w.guide_label = vanilla.TextBox((8, y, col - 8, 20), "Guide")
         self.w.guide_select = vanilla.PopUpButton(
             (col, y, -48, 20),
             []
@@ -116,7 +120,7 @@ class JKNib(BaseWindowController):
         )
 
         y += 32
-        self.w.display_label = vanilla.TextBox((8, y, col-8, 20), "Display")
+        self.w.display_label = vanilla.TextBox((8, y, col - 8, 20), "Display")
         self.w.draw_space = vanilla.CheckBox(
             (col, y, -48, 20),
             "Draw In Space Center",
@@ -141,11 +145,7 @@ class JKNib(BaseWindowController):
         )
 
         y += 32
-        self.w.trace_outline = vanilla.Button(
-            (col, y, 120, 20),
-            title="Trace Outline",
-            callback=self._trace_callback
-        )
+        self.w.trace_outline = vanilla.Button((col, y, 120, 20), title="Trace Outline", callback=self._trace_callback)
 
         self.envSpecificInit()
         # self._update_ui()
@@ -210,9 +210,7 @@ class JKNib(BaseWindowController):
         else:
             if self.guide_layer in self.font_layers:
                 self.w.guide_select.setItems(self.font_layers)
-                self.w.guide_select.set(
-                    self.font_layers.index(self.guide_layer)
-                )
+                self.w.guide_select.set(self.font_layers.index(self.guide_layer))
             else:
                 self._update_layers()
         self.check_secondary_ui()
@@ -283,11 +281,7 @@ class JKNib(BaseWindowController):
             self._update_layers()
             return
         guide_glyph = self.glyph.getLayer(self.guide_layer)
-        glyph = self.get_guide_representation(
-            glyph=guide_glyph,
-            font=guide_glyph.font,
-            angle=self.angle
-        )
+        glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
         p = self.nib_pen(
             self.font,
             self.angle,
@@ -295,7 +289,7 @@ class JKNib(BaseWindowController):
             self.height,
             self._draw_nib_faces,
             nib_superness=self.superness,
-            trace=True
+            trace=True,
         )
         glyph.draw(p)
         p.trace_path(self.glyph)
@@ -324,16 +318,10 @@ class JKNib(BaseWindowController):
                 (def_local_key, has_local_settings),
                 (def_super_key, self.superness),
                 (def_model_key, self.model),
-             ]:
+            ]:
                 self.save_to_lib(self.glyph, setting, value)
         else:
-            for setting in [
-                def_angle_key,
-                def_width_key,
-                def_height_key,
-                def_guide_key,
-                def_local_key
-            ]:
+            for setting in [def_angle_key, def_width_key, def_height_key, def_guide_key, def_local_key]:
                 self.save_to_lib(self.glyph, setting, None)
             # print("Saving settings to", self.font)
             for setting, value in [
@@ -343,7 +331,7 @@ class JKNib(BaseWindowController):
                 (def_guide_key, self.guide_layer),
                 (def_super_key, self.superness),
                 (def_model_key, self.model),
-             ]:
+            ]:
                 self.save_to_lib(self.font, setting, value)
 
     def load_settings(self):
@@ -362,7 +350,7 @@ class JKNib(BaseWindowController):
                 (def_guide_key, "guide_layer"),
                 (def_super_key, "superness"),
                 (def_model_key, "model"),
-             ]:
+            ]:
                 self.load_from_lib(self.glyph, setting, attr)
         else:
             # print("Loading settings from font", self.font)
@@ -378,6 +366,6 @@ class JKNib(BaseWindowController):
                 (def_guide_key, "guide_layer"),
                 (def_super_key, "superness"),
                 (def_model_key, "model"),
-             ]:
+            ]:
                 self.load_from_lib(self.font, setting, attr)
         self._update_ui()
