@@ -189,7 +189,7 @@ class JKNib(BaseWindowController):
             self.nib_pen = nib_models[self.model]
         else:
             self.nib_pen = nib_models[list(nib_models.keys())[0]]
-        self.w.angle_slider.set(self.angle)
+        self.w.angle_slider.set(degrees(self.angle))
         self.w.angle_text.set("%i" % int(round(degrees(self.angle))))
         self.w.width_slider.set(self.width)
         self.w.width_text.set("%i" % self.width)
@@ -226,7 +226,7 @@ class JKNib(BaseWindowController):
         self._update_current_glyph_view()
 
     def _nib_angle_callback(self, sender):
-        angle = int(round(degrees(sender.get())))
+        angle = int(round(sender.get()))
         self.angle = radians(angle)
         self.w.angle_text.set("%i" % angle)
         self._update_current_glyph_view()
