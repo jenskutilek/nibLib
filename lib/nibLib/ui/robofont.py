@@ -208,18 +208,4 @@ class JKNibRoboFont(JKNib):
 
     def _font_changed(self, notification) -> None:
         self.font = notification["font"]
-        if self.font is None:
-            self.font_layers = []
-        else:
-            self.font_layers = self.getLayerList()
-
-    def _update_layers(self) -> None:
-        if self.font is None:
-            self.font_layers = []
-        else:
-            self.font_layers = self.getLayerList()
-        self.w.guide_select.setItems(self.font_layers)
-        if self.font_layers:
-            last_layer = len(self.font_layers) - 1
-            self.w.guide_select.set(last_layer)
-            self.guide_layer = self.font_layers[last_layer]
+        self._update_layers()

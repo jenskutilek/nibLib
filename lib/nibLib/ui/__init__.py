@@ -181,8 +181,19 @@ class JKNib(BaseWindowController):
         pass
 
     def _update_layers(self) -> None:
-        # Override with editor-specific layer update call
-        pass
+        """Called when the layer list in the UI should be updated. Sets the UI layer
+        list to the new layer names and selects the last layer, presumably the
+        background.
+        """
+        if self.font is None:
+            self.font_layers = []
+        else:
+            self.font_layers = self.getLayerList()
+        self.w.guide_select.setItems(self.font_layers)
+        if self.font_layers:
+            last_layer = len(self.font_layers) - 1
+            self.w.guide_select.set(last_layer)
+            self.guide_layer = self.font_layers[last_layer]
 
     def getLayerList(self) -> List[str]:
         """Return a list of layer names. The user can choose the guide layer from those.
