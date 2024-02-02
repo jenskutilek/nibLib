@@ -3,6 +3,7 @@ from __future__ import annotations
 from GlyphsApp import Glyphs
 from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
+from typing import Any, List
 
 
 class JKNibGlyphs(JKNib):
@@ -11,13 +12,13 @@ class JKNibGlyphs(JKNib):
     def envSpecificInit(self) -> None:
         pass
 
-    def envSpecificQuit(self):
+    def envSpecificQuit(self) -> None:
         pass
 
-    def getLayerList(self):
+    def getLayerList(self) -> List[str]:
         return [layer.name for layer in self.glyph.parent.layers]
 
-    def save_to_lib(self, font_or_glyph, libkey, value):
+    def save_to_lib(self, font_or_glyph, libkey, value) -> None:
         if value is None:
             if font_or_glyph.userData and libkey in font_or_glyph.userData:
                 del font_or_glyph.userData[libkey]
@@ -28,7 +29,7 @@ class JKNibGlyphs(JKNib):
             else:
                 font_or_glyph.userData[libkey] = value
 
-    def load_from_lib(self, font_or_glyph, libkey, attr=None):
+    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> Any:
         if font_or_glyph is None:
             return False
         value = font_or_glyph.userData.get(libkey, None)
@@ -37,12 +38,12 @@ class JKNibGlyphs(JKNib):
                 setattr(self, attr, value)
         return value
 
-    def update_current_view(self):
+    def update_current_view(self) -> None:
         currentTabView = Glyphs.font.currentTab
         if currentTabView:
             currentTabView.graphicView().setNeedsDisplay_(True)
 
-    def _setup_draw(self, preview=False):
+    def _setup_draw(self, preview=False) -> None:
         if preview:
             fill(1, 0, 0)
             stroke(0)
@@ -55,7 +56,7 @@ class JKNibGlyphs(JKNib):
         stroke(None)
         lineJoin(self.line_join)
 
-    def draw_preview_glyph(self, preview=False):
+    def draw_preview_glyph(self, preview=False) -> None:
         if self.guide_layer is None:
             self._update_layers()
             return
