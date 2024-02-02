@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import annotations
 
 from math import atan2, pi
 
@@ -25,9 +25,7 @@ class RectNibPen(NibPen):
         Add a path to the nib path.
         """
         if path:
-            path = [
-                self.transform_reverse.transformPoints(pts) for pts in path
-            ]
+            path = [self.transform_reverse.transformPoints(pts) for pts in path]
             if self.trace:
                 self.path.append(path)
             else:
@@ -48,9 +46,7 @@ class RectNibPen(NibPen):
                 subpath.lineToPoint_(p[0])
 
         subpath.closePath()
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(
-            0, 0, 1, self.alpha
-        ).set()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, self.alpha).set()
         subpath.stroke()
 
     def transformPoint(self, pt, d=1):

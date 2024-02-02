@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import annotations
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
@@ -12,8 +12,16 @@ except ImportError:
 
 class NibPen(BasePen):
     def __init__(
-        self, glyphSet, angle, width, height, show_nib_faces=False, alpha=0.2,
-        nib_superness=2.5, trace=False, round_coords=False
+        self,
+        glyphSet,
+        angle,
+        width,
+        height,
+        show_nib_faces=False,
+        alpha=0.2,
+        nib_superness=2.5,
+        trace=False,
+        round_coords=False,
     ):
         BasePen.__init__(self, glyphSet)
         self.angle = angle
@@ -65,6 +73,7 @@ class NibPen(BasePen):
 
     def trace_path(self, out_glyph):
         from mojo.roboFont import RGlyph
+
         tmp = RGlyph()
         p = tmp.getPen()
         first = True

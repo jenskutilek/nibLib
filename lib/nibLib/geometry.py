@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import annotations
 
 from math import atan2, sqrt
 
@@ -35,8 +35,8 @@ def distanceBetweenPoints(p0, p1, doRound=False):
 def halfPoint(p0, p1, doRound=False):
     x0, y0 = p0
     x1, y1 = p1
-    xh = .5 * (x0 + x1)
-    yh = .5 * (y0 + y1)
+    xh = 0.5 * (x0 + x1)
+    yh = 0.5 * (y0 + y1)
     if doRound:
         return int(round(xh)), int(round(yh))
     return xh, yh

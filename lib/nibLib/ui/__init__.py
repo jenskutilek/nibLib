@@ -1,4 +1,5 @@
-from __future__ import division, print_function
+from __future__ import annotations
+
 from math import degrees, pi, radians
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
@@ -61,7 +62,9 @@ class JKNib(BaseWindowController):
             callback=self._nib_angle_callback,
             stopOnTickMarks=False,
         )
-        self.w.angle_text = vanilla.TextBox((-40, y, -8, 20), "%i" % int(round(degrees(self.angle))))
+        self.w.angle_text = vanilla.TextBox(
+            (-40, y, -8, 20), "%i" % int(round(degrees(self.angle)))
+        )
 
         y += 24
 
@@ -101,13 +104,15 @@ class JKNib(BaseWindowController):
             value=self.superness,
             callback=self._nib_superness_callback,
         )
-        self.w.superness_text = vanilla.TextBox((-40, y, -8, 20), "%0.2f" % self.superness)
+        self.w.superness_text = vanilla.TextBox(
+            (-40, y, -8, 20), "%0.2f" % self.superness
+        )
 
         y += 32
         self.w.guide_label = vanilla.TextBox((8, y, col - 8, 20), "Guide")
         self.w.guide_select = vanilla.PopUpButton(
             (col, y, -48, 20),
-            []
+            [],
             # callback=self._guide_select_callback,
         )
 
@@ -145,7 +150,9 @@ class JKNib(BaseWindowController):
         )
 
         y += 32
-        self.w.trace_outline = vanilla.Button((col, y, 120, 20), title="Trace Outline", callback=self._trace_callback)
+        self.w.trace_outline = vanilla.Button(
+            (col, y, 120, 20), title="Trace Outline", callback=self._trace_callback
+        )
 
         self.envSpecificInit()
         self._update_layers()
@@ -291,7 +298,7 @@ class JKNib(BaseWindowController):
     def _setup_draw(self, preview=False):
         pass
 
-    def _draw_preview_glyph(self, preview=False):
+    def draw_preview_glyph(self, preview=False):
         raise NotImplementedError
 
     def save_to_lib(self, font_or_glyph, libkey, value):
@@ -315,7 +322,13 @@ class JKNib(BaseWindowController):
             ]:
                 self.save_to_lib(self.glyph, setting, value)
         else:
-            for setting in [def_angle_key, def_width_key, def_height_key, def_guide_key, def_local_key]:
+            for setting in [
+                def_angle_key,
+                def_width_key,
+                def_height_key,
+                def_guide_key,
+                def_local_key,
+            ]:
                 self.save_to_lib(self.glyph, setting, None)
             # print("Saving settings to", self.font)
             for setting, value in [
@@ -331,7 +344,7 @@ class JKNib(BaseWindowController):
     def load_settings(self):
         has_local_settings = self.load_from_lib(self.glyph, def_local_key)
         if has_local_settings:
-            # print("Loading settings from glyph", self.glyph)
+            print("Loading settings from glyph", self.glyph)
             self.w.glyph_local.set(True)
             angle = self.load_from_lib(self.glyph, def_angle_key)
             if angle is None:
@@ -347,7 +360,7 @@ class JKNib(BaseWindowController):
             ]:
                 self.load_from_lib(self.glyph, setting, attr)
         else:
-            # print("Loading settings from font", self.font)
+            print("Loading settings from font", self.font)
             self.w.glyph_local.set(False)
             angle = self.load_from_lib(self.font, def_angle_key)
             if angle is None:

@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import annotations
 
 # RoboFont-internal packages
 # from lib.tools.extremePoints import ExtremePointPen
@@ -30,6 +30,7 @@ def _registerFactory():
     # always register if debugging
     # otherwise only register if it isn't registered
     from defcon import registerRepresentationFactory, Glyph
+
     if DEBUG:
         if rf_guide_key in Glyph.representationFactories:
             for font in AllFonts():
@@ -38,15 +39,12 @@ def _registerFactory():
         registerRepresentationFactory(rf_guide_key, NibGuideGlyphFactory)
     else:
         if rf_guide_key not in Glyph.representationFactories:
-            registerRepresentationFactory(
-                Glyph,
-                rf_guide_key,
-                NibGuideGlyphFactory
-            )
+            registerRepresentationFactory(Glyph, rf_guide_key, NibGuideGlyphFactory)
 
 
 def _unregisterFactory():
     from defcon import unregisterRepresentationFactory, Glyph
+
     try:
         unregisterRepresentationFactory(Glyph, rf_guide_key)
     except:
@@ -54,7 +52,6 @@ def _unregisterFactory():
 
 
 class JKNibRoboFont(JKNib):
-
     observers = (
         ("_preview", "drawBackground"),
         ("_preview", "drawInactive"),
@@ -65,23 +62,17 @@ class JKNibRoboFont(JKNib):
     )
 
     def __init__(self):
-        super(JKNibRoboFont, self).__init__(
-            CurrentGlyph(),
-            CurrentFont()
-        )
+        super(JKNibRoboFont, self).__init__(CurrentGlyph(), CurrentFont())
 
     def envSpecificInit(self):
         self.setUpBaseWindowBehavior()
         self.addObservers()
         _registerFactory()
-        self._update_layers()
         self.load_settings()
-        self._update_current_glyph_view()
 
     def envSpecificQuit(self):
         self.removeObservers()
         _unregisterFactory()
-        self._update_current_glyph_view()
 
     def addObservers(self):
         for method, observer in self.observers:
@@ -108,9 +99,7 @@ class JKNibRoboFont(JKNib):
             removeObserver(self, "spaceCenterDraw")
 
     def get_guide_representation(self, glyph, font, angle):
-        return glyph.getLayer(
-            self.guide_layer
-        ).getRepresentation(
+        return glyph.getLayer(self.guide_layer).getRepresentation(
             rf_guide_key, font=font, angle=angle
         )
 
@@ -120,9 +109,7 @@ class JKNibRoboFont(JKNib):
             return
         guide_glyph = self.glyph.getLayer(self.guide_layer)
         glyph = self.get_guide_representation(
-            glyph=guide_glyph,
-            font=guide_glyph.font,
-            angle=self.angle
+            glyph=guide_glyph, font=guide_glyph.font, angle=self.angle
         )
         p = self.nib_pen(
             self.font,
@@ -131,20 +118,20 @@ class JKNibRoboFont(JKNib):
             self.height,
             self._draw_nib_faces,
             nib_superness=self.superness,
-            trace=True
+            trace=True,
         )
         glyph.draw(p)
         p.trace_path(self.glyph)
 
     def _draw_preview(self, notification, preview=False):
-        self._draw_preview_glyph(preview=preview)
+        self.draw_preview_glyph(preview=preview)
 
     def _preview(self, notification):
-        self._draw_preview_glyph(False)
+        self.draw_preview_glyph(False)
 
     def _previewFull(self, notification):
         if self._draw_in_preview_mode:
-            self._draw_preview_glyph(True)
+            self.draw_preview_glyph(True)
 
     def _glyph_changed(self, notification):
         if self.glyph is not None:
@@ -168,15 +155,13 @@ class JKNibRoboFont(JKNib):
         stroke(None)
         lineJoin(self.line_join)
 
-    def _draw_preview_glyph(self, preview=False):
+    def draw_preview_glyph(self, preview=False):
         if self.guide_layer is None:
             self._update_layers()
             return
         guide_glyph = self.glyph.getLayer(self.guide_layer)
         glyph = self.get_guide_representation(
-            glyph=guide_glyph,
-            font=guide_glyph.font,
-            angle=self.angle
+            glyph=guide_glyph, font=guide_glyph.font, angle=self.angle
         )
         save()
         self._setup_draw(preview=preview)
@@ -188,7 +173,7 @@ class JKNibRoboFont(JKNib):
             self.width,
             self.height,
             self._draw_nib_faces,
-            nib_superness=self.superness
+            nib_superness=self.superness,
         )
         glyph.draw(p)
         restore()

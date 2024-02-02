@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import objc
 from GlyphsApp import *
 from GlyphsApp.plugins import *

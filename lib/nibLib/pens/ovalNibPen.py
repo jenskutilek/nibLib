@@ -1,5 +1,4 @@
-# encoding: utf-8
-from __future__ import division, print_function
+from __future__ import annotations
 
 from math import atan2, cos, degrees, sin, tan
 

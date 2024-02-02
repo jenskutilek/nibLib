@@ -1,4 +1,4 @@
-from __future__ import division, print_function
+from __future__ import annotations
 
 from math import atan2, pi
 
@@ -26,9 +26,7 @@ class FakeOvalNibPen(RectNibPen):
         Add a path to the nib path.
         """
         if path:
-            path = [
-                self.transform_reverse.transformPoints(pts) for pts in path
-            ]
+            path = [self.transform_reverse.transformPoints(pts) for pts in path]
             if self.trace:
                 self.path.append(path)
             else:
@@ -49,9 +47,7 @@ class FakeOvalNibPen(RectNibPen):
                 subpath.lineToPoint_(p[0])
 
         subpath.closePath()
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(
-            0, 0, 1, self.alpha
-        ).set()
+        NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, self.alpha).set()
         subpath.stroke()
 
     def transformPoint(self, pt, d=1):
@@ -174,8 +170,8 @@ class FakeOvalNibPen(RectNibPen):
 
         path = None
 
-        Q1 = (rho1 / pi)
-        Q2 = (rho2 / pi)
+        Q1 = rho1 / pi
+        Q2 = rho2 / pi
         print(f"       Q1: {Q1}, Q2: {Q2}")
         Q1 = normalize_quadrant(rho1 / pi)
         Q2 = normalize_quadrant(rho2 / pi)
@@ -193,8 +189,29 @@ class FakeOvalNibPen(RectNibPen):
         The points A2, B2, C2, D2 are the points of the nib face translated to
         the end of the current stroke.
         """
-        seq0 = ((B2,), (C2,), (Cc2, Cc1, C1,), (A1,), (Ac1, Ac2, A2))
-        seq1 = ((half(A1, D1),), (half(A1, B1),), (Bc1, Bc2, half(B2, C2)), (half(C2, D2),), (half(D2, A2),), (Dc2, Dc1, half(C1, D1),))
+        seq0 = (
+            (B2,),
+            (C2,),
+            (
+                Cc2,
+                Cc1,
+                C1,
+            ),
+            (A1,),
+            (Ac1, Ac2, A2),
+        )
+        seq1 = (
+            (half(A1, D1),),
+            (half(A1, B1),),
+            (Bc1, Bc2, half(B2, C2)),
+            (half(C2, D2),),
+            (half(D2, A2),),
+            (
+                Dc2,
+                Dc1,
+                half(C1, D1),
+            ),
+        )
         seq2 = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
         seq3 = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
         if Q1 == 0:
