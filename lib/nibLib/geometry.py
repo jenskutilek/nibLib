@@ -32,20 +32,15 @@ def getPointsFromCurve(p: CCurve, div=0.75) -> List[TPoint]:
     return points
 
 
-def getPathFromPoints(
-    points: Sequence[TPoint],
-) -> List[Tuple[TPoint] | Tuple[TPoint, TPoint, TPoint]]:
+def getPathFromPoints(points: Sequence[TPoint]) -> List[Tuple[TPoint, ...]]:
     """Return a path with lines and curves from a sequence of points.
 
     Args:
         points (Sequence[TPoint]): The list of points.
 
     Returns:
-        List[Tuple[TPoint] | Tuple[TPoint, TPoint, TPoint]]: The path.
+        List[Tuple[TPoint, ...]]: The path.
     """
-    # error = 50.0
-    # cornerTolerance = 20.0
-    # maxSegments = 20
     curve_points = SCBezierPath().fromPoints(
         [SCPoint(x, y) for x, y in points],
         error=1.0,
@@ -54,18 +49,17 @@ def getPathFromPoints(
     )
 
     # Reconvert Simon's BezierPath segments to our segment type
-    curves: List[Tuple[TPoint] | Tuple[TPoint, TPoint, TPoint]] = []
+    curves: List[Tuple[TPoint, ...]] = []
     first = True
     for segment in curve_points.asSegments():
-        segment_tuple = []
         if first:
             # For the first segment, add the move point
             p = segment[0]
             curves.append(((p.x, p.y),))
             first = False
-        for p in segment[1:]:
-            segment_tuple.append((p.x, p.y))
-        curves.append(tuple(segment_tuple))
+        # Do we have to check the length of the tuples? Or are they always cubic curves
+        # with 3 points?
+        curves.append(tuple([(p.x, p.y) for p in segment[1:]]))
     return curves
 
 
