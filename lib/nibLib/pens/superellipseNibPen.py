@@ -44,14 +44,12 @@ class SuperellipseNibPen(OvalNibPen):
             pass
 
         # Just add the remaining three quarters by transposing the existing points
-        points.extend([(-p[0], p[1]) for p in reversed(points)])
-        points.extend([(p[0], -p[1]) for p in reversed(points)])
+        points.extend([(-x, y) for x, y in reversed(points)])
+        points.extend([(x, -y) for x, y in reversed(points)])
 
         self.nib_face_path = points
         self.nib_face_path_transformed = points.copy()
-        self.setup_nib_face_path()
         self.nib_drawing_path = getPathFromPoints(points)
-        self.nib_drawing_path_transformed = self.nib_drawing_path.copy()
         self.cache_angle = None
 
     def _get_rotated_point(self, pt: TPoint, phi: float) -> TPoint:
@@ -199,64 +197,13 @@ class SuperellipseNibPen(OvalNibPen):
     def _endPath(self) -> None:
         self._currentPoint = None
 
-    def setup_nib_face_path(self) -> None:
-        # Build a bezier path to more easily draw the nib face
-        return
-        points = self.nib_face_path
-        nib = self.nib_face_bezier_path = NSBezierPath.alloc().init()
-        nib.moveToPoint_(points[0])
-        for p in points[1:]:
-            nib.lineToPoint_(p)
-        nib.closePath()
-
     def _draw_nib_face(self, pt: TPoint) -> None:
-        return
-        if self.trace:
-            x, y = pt
-            nib = []
-            t = Transform().translate(x, y).rotate(self.angle)
-            for seg in self.nib_drawing_path:
-                seg_path = []
-                for p in seg:
-                    seg_path.append(t.transformPoint(p))
-                nib.append(seg_path)
-            self.path.append(nib)
-        else:
-            save()
-            translate(pt[0], pt[1])
-            rotate(degrees(self.angle))
-            self.nib_face_bezier_path.stroke()
-            restore()
-
-    def trace_path(self, out_glyph):
-        from mojo.roboFont import RGlyph
-
-        tmp = RGlyph()
-        p = tmp.getPen()
-        first = True
-        for path in self.path:
-            if first:
-                first = False
-            else:
-                p.closePath()
-                out_glyph.appendGlyph(tmp)
-                tmp.clear()
-            p.moveTo(self.round_pt(path[0][0]))
-            for segment in path[1:]:
-                if len(segment) == 1:
-                    p.lineTo(self.round_pt(segment[0]))
-                elif len(segment) == 3:
-                    p.curveTo(
-                        self.round_pt(segment[0]),
-                        self.round_pt(segment[1]),
-                        self.round_pt(segment[2]),
-                    )
-
-                else:
-                    print("Unknown segment type:", segment)
-        p.closePath()
-        # tmp.correctDirection()
-        out_glyph.appendGlyph(tmp)
-        # out_glyph.removeOverlap()
-        # out_glyph.removeOverlap()
-        out_glyph.update()
+        x, y = pt
+        nib = []
+        t = Transform().translate(x, y).rotate(self.angle)
+        for seg in self.nib_drawing_path:
+            seg_path = []
+            for p in seg:
+                seg_path.append(t.transformPoint(p))
+            nib.append(seg_path)
+        self.addPathRaw(nib)

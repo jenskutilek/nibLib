@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from GlyphsApp import Glyphs
+
 # from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
 from typing import List
@@ -63,3 +64,19 @@ class JKNibGlyphs(JKNib):
         )
         self.guide_layer.draw(p)
         # restore()
+
+    def _trace_callback(self, sender) -> None:
+        if self.guide_layer_name is None:
+            self._update_layers()
+            return
+        p = self.nib_pen(
+            self.font,
+            self.angle,
+            self.width,
+            self.height,
+            self._draw_nib_faces,
+            nib_superness=self.superness,
+            trace=True,
+        )
+        self.guide_layer.draw(p)
+        p.trace_path(self.glyph)

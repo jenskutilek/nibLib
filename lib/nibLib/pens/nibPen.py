@@ -91,7 +91,7 @@ class NibPen(BasePen):
             transformation (Transform): The component's transformation.
         """
         pass
-    
+
     def addPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
         """
         Add a path to the nib path.
@@ -105,24 +105,34 @@ class NibPen(BasePen):
         else:
             draw_path(tr_path)
 
-    def trace_path(self, out_glyph) -> None:
+    def addPathRaw(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
+        """
+        Add a path to the nib path. The path is added as is, i.e. the points must have
+        been transformed by the caller.
+        """
+        if path is None:
+            return
+
+        if self.trace:
+            self.path.append(path)
+        else:
+            draw_path(path)
+
+    def trace_path(self, out_glyph, clear=True) -> None:
         """Trace the path into the supplied glyph.
 
         Args:
             out_glyph (RGlyph): The glyph to receive the traced path.
         """
-        from mojo.roboFont import RGlyph
-
-        tmp = RGlyph()
-        p = tmp.getPen()
+        if clear:
+            out_glyph.clear()
+        p = out_glyph.getPen()
         first = True
         for path in self.path:
             if first:
                 first = False
             else:
                 p.closePath()
-                out_glyph.appendGlyph(tmp)
-                tmp.clear()
             p.moveTo(self.round_pt(path[0][0]))
             for segment in path[1:]:
                 if len(segment) == 1:
@@ -138,7 +148,6 @@ class NibPen(BasePen):
                     print("Unknown segment type:", segment)
         p.closePath()
         # tmp.correctDirection()
-        out_glyph.appendGlyph(tmp)
         # out_glyph.removeOverlap()
         # out_glyph.removeOverlap()
-        out_glyph.update()
+        # out_glyph.update()

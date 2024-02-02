@@ -377,25 +377,7 @@ class JKNib(BaseWindowController):
         return glyph.copy()
 
     def _trace_callback(self, sender) -> None:
-        return
-
-        # FIXME
-        if self.guide_layer_name is None:
-            self._update_layers()
-            return
-        guide_glyph = self.glyph.getLayer(self.guide_layer_name)
-        glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
-        p = self.nib_pen(
-            self.font,
-            self.angle,
-            self.width,
-            self.height,
-            self._draw_nib_faces,
-            nib_superness=self.superness,
-            trace=True,
-        )
-        glyph.draw(p)
-        p.trace_path(self.glyph)
+        raise NotImplementedError
 
     def _setup_draw(self, preview=False) -> None:
         pass
