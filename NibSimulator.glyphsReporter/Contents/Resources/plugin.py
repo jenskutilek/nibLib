@@ -62,7 +62,16 @@ class NibSimulator(ReporterPlugin):
         self.w = None
 
     def openSettingsWindow_(self, sender):
-        self.w = JKNibGlyphs(None, None)
+        font = Glyphs.font
+        layer = None
+        master = None
+        if font is not None:
+            sel = font.selectedLayers
+            layer = None if sel is None else sel[0]
+            if layer is not None:
+                master = layer.master
+
+        self.w = JKNibGlyphs(layer, master, self)
 
     @objc.python_method
     def __file__(self):
