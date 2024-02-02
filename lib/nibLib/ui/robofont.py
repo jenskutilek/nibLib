@@ -94,6 +94,19 @@ class JKNibRoboFont(JKNib):
     def _update_current_glyph_view(self) -> None:
         UpdateCurrentGlyphView()
 
+    def _update_layers(self) -> None:
+        """
+        Called when the layer list in the UI should be updated. Sets the UI layer
+        list to the new layer names and selects the default guide layer.
+        """
+        self.font_layers = self.getLayerList()
+        self.w.guide_select.setItems(self.font_layers)
+        if self.font_layers:
+            # Select the last layer
+            last_layer = len(self.font_layers) - 1
+            self.w.guide_select.set(last_layer)
+            self.guide_layer_name = self.font_layers[last_layer]
+
     def _draw_space_callback(self, sender) -> None:
         # RF-specific: Draw in space center
         value = sender.get()
@@ -103,15 +116,15 @@ class JKNibRoboFont(JKNib):
             removeObserver(self, "spaceCenterDraw")
 
     def get_guide_representation(self, glyph: RGlyph, font, angle: float):
-        return glyph.getLayer(self.guide_layer).getRepresentation(
+        return glyph.getLayer(self.guide_layer_name).getRepresentation(
             rf_guide_key, font=font, angle=angle
         )
 
     def _trace_callback(self, sender) -> None:
-        if self.guide_layer is None:
+        if self.guide_layer_name is None:
             self._update_layers()
             return
-        guide_glyph = self.glyph.getLayer(self.guide_layer)
+        guide_glyph = self.glyph.getLayer(self.guide_layer_name)
         glyph = self.get_guide_representation(
             glyph=guide_glyph, font=guide_glyph.font, angle=self.angle
         )
@@ -160,10 +173,10 @@ class JKNibRoboFont(JKNib):
         lineJoin(self.line_join)
 
     def draw_preview_glyph(self, preview=False) -> None:
-        if self.guide_layer is None:
+        if self.guide_layer_name is None:
             self._update_layers()
             return
-        guide_glyph = self.glyph.getLayer(self.guide_layer)
+        guide_glyph = self.glyph.getLayer(self.guide_layer_name)
         glyph = self.get_guide_representation(
             glyph=guide_glyph, font=guide_glyph.font, angle=self.angle
         )

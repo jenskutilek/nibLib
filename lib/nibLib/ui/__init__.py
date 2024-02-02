@@ -29,6 +29,8 @@ class JKNib(BaseWindowController):
         self.height = 2
         self.superness = 2.5
         self.line_join = "round"  # bevel, round
+        self.font_layers = []
+        self._guide_layer_name: str | None = None
         self.guide_layer = None
         self.nib_pen = nib_models[self.model]
 
@@ -190,15 +192,7 @@ class JKNib(BaseWindowController):
         list to the new layer names and selects the last layer, presumably the
         background.
         """
-        if self.font is None:
-            self.font_layers = []
-        else:
-            self.font_layers = self.getLayerList()
-        self.w.guide_select.setItems(self.font_layers)
-        if self.font_layers:
-            last_layer = len(self.font_layers) - 1
-            self.w.guide_select.set(last_layer)
-            self.guide_layer = self.font_layers[last_layer]
+        pass
 
     def getLayerList(self) -> List[str]:
         """Return a list of layer names. The user can choose the guide layer from those.
@@ -209,7 +203,6 @@ class JKNib(BaseWindowController):
         return []
 
     def _update_ui(self) -> None:
-        # print("_update_ui")
         i = 0
         for i, model in enumerate(self.w.model_select.getItems()):
             if model == self.model:
@@ -232,9 +225,9 @@ class JKNib(BaseWindowController):
         if self.font is None:
             self.w.guide_select.setItems([])
         else:
-            if self.guide_layer in self.font_layers:
+            if self.guide_layer_name in self.font_layers:
                 self.w.guide_select.setItems(self.font_layers)
-                self.w.guide_select.set(self.font_layers.index(self.guide_layer))
+                self.w.guide_select.set(self.font_layers.index(self.guide_layer_name))
             else:
                 self._update_layers()
         self.check_secondary_ui()
@@ -248,6 +241,35 @@ class JKNib(BaseWindowController):
             self.w.draw_faces.enable(True)
         else:
             self.w.draw_faces.enable(False)
+
+    @property
+    def guide_layer_name(self) -> str | None:
+        return self._guide_layer_name
+
+    @guide_layer_name.setter
+    def guide_layer_name(self, value: str | None) -> None:
+        self._guide_layer_name = value
+        if self._guide_layer_name is None:
+            self.w.guide_select.setItem(None)
+            self.guide_layer = None
+        else:
+            self.w.guide_select.setItem(self._guide_layer_name)
+            self._set_guide_layer(self._guide_layer_name)
+        self._update_current_glyph_view()
+    
+    def _set_guide_layer(self, name: str) -> None:
+        """
+        Override in subclass to set self.guide_layer to the actual layer object.
+        """
+        pass
+
+    def _guide_select_callback(self, sender) -> None:
+        """
+        User selected the guide layer from the list
+        """
+        name = sender.getItem()
+        print(f"Selected layer: {name}")
+        self.guide_layer_name = name
 
     def _model_select_callback(self, sender) -> None:
         self.model = self.w.model_select.getItems()[sender.get()]
@@ -301,10 +323,13 @@ class JKNib(BaseWindowController):
         return glyph.copy()
 
     def _trace_callback(self, sender) -> None:
-        if self.guide_layer is None:
+        return
+
+        # FIXME
+        if self.guide_layer_name is None:
             self._update_layers()
             return
-        guide_glyph = self.glyph.getLayer(self.guide_layer)
+        guide_glyph = self.glyph.getLayer(self.guide_layer_name)
         glyph = get_guide_representation(font=guide_glyph.font, angle=self.angle)
         p = self.nib_pen(
             self.font,
@@ -338,7 +363,7 @@ class JKNib(BaseWindowController):
                 (def_angle_key, degrees(self.angle)),
                 (def_width_key, self.width),
                 (def_height_key, self.height),
-                (def_guide_key, self.guide_layer),
+                (def_guide_key, self.guide_layer_name),
                 (def_local_key, has_local_settings),
                 (def_super_key, self.superness),
                 (def_model_key, self.model),
@@ -358,7 +383,7 @@ class JKNib(BaseWindowController):
                 (def_angle_key, degrees(self.angle)),
                 (def_width_key, self.width),
                 (def_height_key, self.height),
-                (def_guide_key, self.guide_layer),
+                (def_guide_key, self.guide_layer_name),
                 (def_super_key, self.superness),
                 (def_model_key, self.model),
             ]:
@@ -367,7 +392,7 @@ class JKNib(BaseWindowController):
     def load_settings(self) -> None:
         has_local_settings = self.load_from_lib(self.glyph, def_local_key)
         if has_local_settings:
-            print("Loading settings from glyph", self.glyph)
+            # print("Loading settings from glyph", self.glyph)
             self.w.glyph_local.set(True)
             angle = self.load_from_lib(self.glyph, def_angle_key)
             if angle is None:
@@ -393,7 +418,7 @@ class JKNib(BaseWindowController):
             for setting, attr in [
                 (def_width_key, "width"),
                 (def_height_key, "height"),
-                (def_guide_key, "guide_layer"),
+                (def_guide_key, "guide_layer_name"),
                 (def_super_key, "superness"),
                 (def_model_key, "model"),
             ]:

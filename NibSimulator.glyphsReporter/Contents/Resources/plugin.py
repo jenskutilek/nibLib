@@ -35,10 +35,6 @@ class NibSimulator(ReporterPlugin):
         if self.w is None:
             return
 
-        if hasattr(layer.background, "draw"):
-            self.w.guide_layer = layer.background
-        else:
-            self.w.guide_layer = layer
         self.w.draw_preview_glyph()
 
     # @objc.python_method
