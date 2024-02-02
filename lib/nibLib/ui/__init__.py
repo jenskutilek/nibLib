@@ -350,8 +350,8 @@ class JKNib(BaseWindowController):
         self._update_current_glyph_view()
 
     def _nib_superness_callback(self, sender) -> None:
-        self.superness = sender.get()
-        self.w.superness_text.set("%0.2f" % self.superness)
+        self.superness = round(sender.get(), 1)
+        self.w.superness_text.set("%0.1f" % self.superness)
         self._update_current_glyph_view()
 
     def _glyph_local_callback(self, sender) -> None:
