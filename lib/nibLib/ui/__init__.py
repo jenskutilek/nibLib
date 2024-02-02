@@ -104,7 +104,7 @@ class JKNib(BaseWindowController):
         self.w.superness_slider = vanilla.Slider(
             (col, y, -48, 20),
             minValue=1.1,
-            maxValue=15.0,
+            maxValue=12.0,
             value=self.superness,
             callback=self._nib_superness_callback,
         )
@@ -350,8 +350,12 @@ class JKNib(BaseWindowController):
         self._update_current_glyph_view()
 
     def _nib_superness_callback(self, sender) -> None:
-        self.superness = round(sender.get(), 1)
-        self.w.superness_text.set("%0.1f" % self.superness)
+        s = round(sender.get(), 1)
+        if s > 6:
+            self.superness = 6 + (s - 6) ** 2
+        else:
+            self.superness = s
+        self.w.superness_text.set("%0.1f" % s)
         self._update_current_glyph_view()
 
     def _glyph_local_callback(self, sender) -> None:
