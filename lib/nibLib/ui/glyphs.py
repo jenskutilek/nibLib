@@ -8,8 +8,8 @@ from nibLib.ui import JKNib
 class JKNibGlyphs(JKNib):
     user_data_attr = "userData"
 
-    def envSpecificInit(self):
-        self.load_settings()
+    def envSpecificInit(self) -> None:
+        pass
 
     def envSpecificQuit(self):
         pass

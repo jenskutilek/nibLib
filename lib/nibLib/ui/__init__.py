@@ -156,6 +156,7 @@ class JKNib(BaseWindowController):
         )
 
         self.envSpecificInit()
+        self.load_settings()
         self._update_layers()
         # self._update_ui()
         # self.w.trace_outline.enable(False)

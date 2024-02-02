@@ -68,7 +68,6 @@ class JKNibRoboFont(JKNib):
         self.setUpBaseWindowBehavior()
         self.addObservers()
         _registerFactory()
-        self.load_settings()
 
     def envSpecificQuit(self) -> None:
         self.removeObservers()
