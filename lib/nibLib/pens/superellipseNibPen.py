@@ -85,22 +85,22 @@ class SuperellipseNibPen(OvalNibPen):
 
     def _moveTo(self, pt: TPoint) -> None:
         t = self.transform.transformPoint(pt)
-        self.__currentPoint = t
+        self._currentPoint = t
         self.contourStart = pt
         self._draw_nib_face(pt)
 
     def _lineTo(self, pt: TPoint) -> None:
-        if self.__currentPoint is None:
+        if self._currentPoint is None:
             raise ValueError
 
-        cx, cy = self.__currentPoint
+        cx, cy = self._currentPoint
 
         t = self.transform.transformPoint(pt)
         tx, ty = t
 
         # angle from the previous to the current point
-        phi = angleBetweenPoints(self.__currentPoint, t)
-        # print(u"%0.2f°: %s -> %s" % (degrees(phi), self.__currentPoint, pt))
+        phi = angleBetweenPoints(self._currentPoint, t)
+        # print(u"%0.2f°: %s -> %s" % (degrees(phi), self._currentPoint, pt))
 
         x, y = self._get_tangent_point(phi)
 
@@ -112,10 +112,10 @@ class SuperellipseNibPen(OvalNibPen):
         self.addPath([[p0], [p3], [p2], [p1]])
         self._draw_nib_face(pt)
 
-        self.__currentPoint = t
+        self._currentPoint = t
 
     def _curveToOne(self, pt1: TPoint, pt2: TPoint, pt3: TPoint) -> None:
-        if self.__currentPoint is None:
+        if self._currentPoint is None:
             raise ValueError
 
         # if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
@@ -126,7 +126,7 @@ class SuperellipseNibPen(OvalNibPen):
         t3 = self.transform.transformPoint(pt3)
 
         # Break curve into line segments
-        points = getPointsFromCurve((self.__currentPoint, t1, t2, t3), 5)
+        points = getPointsFromCurve((self._currentPoint, t1, t2, t3), 5)
 
         # Draw points of center line
         # if DEBUG_CENTER_POINTS:
@@ -140,7 +140,7 @@ class SuperellipseNibPen(OvalNibPen):
         # Calculate angles between points
 
         # The first angle is that of the curve start point to bcp1
-        angles = [angleBetweenPoints(self.__currentPoint, t1)]
+        angles = [angleBetweenPoints(self._currentPoint, t1)]
 
         for i in range(1, len(points)):
             phi = angleBetweenPoints(points[i - 1], points[i])
@@ -188,16 +188,16 @@ class SuperellipseNibPen(OvalNibPen):
                 self.addPath([[self.transform.transformPoint(o)] for o in optimized])
             self._draw_nib_face(pt3)
 
-        self.__currentPoint = t3
+        self._currentPoint = t3
         # if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
         #     restore()
 
     def _closePath(self) -> None:
         self.lineTo(self.contourStart)
-        self.__currentPoint = None
+        self._currentPoint = None
 
     def _endPath(self) -> None:
-        self.__currentPoint = None
+        self._currentPoint = None
 
     def setup_nib_face_path(self) -> None:
         # Build a bezier path to more easily draw the nib face

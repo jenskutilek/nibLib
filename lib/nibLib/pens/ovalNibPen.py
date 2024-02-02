@@ -53,22 +53,22 @@ class OvalNibPen(RectNibPen):
         restore()
 
     def _moveTo(self, pt: TPoint) -> None:
-        self.__currentPoint = pt
+        self._currentPoint = pt
         self.contourStart = pt
         if not self.trace:
             self._draw_nib_face(pt)
 
     def _lineTo(self, pt: TPoint) -> None:
-        if self.__currentPoint is None:
+        if self._currentPoint is None:
             raise ValueError
 
         # angle from the previous to the current point
-        phi = angleBetweenPoints(self.__currentPoint, pt)
-        # print(u"%0.2f°: %s -> %s" % (degrees(phi), self.__currentPoint, pt))
+        phi = angleBetweenPoints(self._currentPoint, pt)
+        # print(u"%0.2f°: %s -> %s" % (degrees(phi), self._currentPoint, pt))
         pt0 = self._get_tangent_point(phi - self.angle)
         x, y = self._get_rotated_tangent_point(pt0)
         px, py = pt
-        cx, cy = self.__currentPoint
+        cx, cy = self._currentPoint
 
         self.addPath(
             [
@@ -82,14 +82,14 @@ class OvalNibPen(RectNibPen):
         if not self.trace:
             self._draw_nib_face(pt)
 
-        self.__currentPoint = pt
+        self._currentPoint = pt
 
     def _curveToOne(self, pt1: TPoint, pt2: TPoint, pt3: TPoint) -> None:
-        if self.__currentPoint is None:
+        if self._currentPoint is None:
             raise ValueError
 
         # Break curve into line segments
-        points = getPointsFromCurve((self.__currentPoint, pt1, pt2, pt3), 5)
+        points = getPointsFromCurve((self._currentPoint, pt1, pt2, pt3), 5)
 
         # Draw points of center line
         # if DEBUG_CENTER_POINTS:
@@ -104,7 +104,7 @@ class OvalNibPen(RectNibPen):
         # Calculate angles between points
 
         # The first angle is that of the curve start point to bcp1
-        angles = [angleBetweenPoints(self.__currentPoint, pt1)]
+        angles = [angleBetweenPoints(self._currentPoint, pt1)]
 
         for i in range(1, len(points)):
             phi = angleBetweenPoints(points[i - 1], points[i])
@@ -158,10 +158,10 @@ class OvalNibPen(RectNibPen):
             if not self.trace:
                 self._draw_nib_face(pt3)
 
-        self.__currentPoint = pt3
+        self._currentPoint = pt3
 
     def _closePath(self) -> None:
-        self.__currentPoint = None
+        self._currentPoint = None
 
     def _endPath(self) -> None:
-        self.__currentPoint = None
+        self._currentPoint = None

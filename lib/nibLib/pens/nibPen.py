@@ -71,7 +71,7 @@ class NibPen(BasePen):
 
         self.path = []
 
-        self.__currentPoint: TPoint | None = None
+        self._currentPoint: TPoint | None = None
 
     def round_pt(self, pt: TPoint) -> TPoint:
         # Round a point based on self.round_coords
