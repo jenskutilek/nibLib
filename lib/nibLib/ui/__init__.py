@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from math import degrees, pi, radians
 import vanilla
-from defconAppKit.windows.baseWindow import BaseWindowController
 
+from defconAppKit.windows.baseWindow import BaseWindowController
+from math import degrees, pi, radians
 from nibLib import (
     DEBUG,
     def_angle_key,
@@ -16,10 +16,11 @@ from nibLib import (
     rf_guide_key,
 )
 from nibLib.pens import nib_models
+from typing import Any, List
 
 
 class JKNib(BaseWindowController):
-    def __init__(self, glyph, font):
+    def __init__(self, glyph, font) -> None:
         self.model = "Superellipse"
         self.angle = radians(30)
         self.width = 60
@@ -161,31 +162,36 @@ class JKNib(BaseWindowController):
         self.w.open()
         self._update_current_glyph_view()
 
-    def envSpecificInit(self):
+    def envSpecificInit(self) -> None:
         pass
 
-    def windowCloseCallback(self, sender):
+    def windowCloseCallback(self, sender) -> None:
         if self.font is not None:
             self.save_settings()
         self.envSpecificQuit()
         super(JKNib, self).windowCloseCallback(sender)
         self._update_current_glyph_view()
 
-    def envSpecificQuit(self):
+    def envSpecificQuit(self) -> None:
         pass
 
-    def _update_current_glyph_view(self):
+    def _update_current_glyph_view(self) -> None:
         # Overwrite with editor-specific update call
         pass
 
-    def _update_layers(self):
+    def _update_layers(self) -> None:
         # Override with editor-specific layer update call
         pass
 
-    def getLayerList(self):
+    def getLayerList(self) -> List[str]:
+        """Return a list of layer names. The user can choose the guide layer from those.
+
+        Returns:
+            List[str]: The list of layer names.
+        """
         return []
 
-    def _update_ui(self):
+    def _update_ui(self) -> None:
         # print("_update_ui")
         i = 0
         for i, model in enumerate(self.w.model_select.getItems()):
@@ -216,7 +222,7 @@ class JKNib(BaseWindowController):
                 self._update_layers()
         self.check_secondary_ui()
 
-    def check_secondary_ui(self):
+    def check_secondary_ui(self) -> None:
         if self.model == "Superellipse":
             self.w.superness_slider.enable(True)
         else:
@@ -226,50 +232,50 @@ class JKNib(BaseWindowController):
         else:
             self.w.draw_faces.enable(False)
 
-    def _model_select_callback(self, sender):
+    def _model_select_callback(self, sender) -> None:
         self.model = self.w.model_select.getItems()[sender.get()]
         self.nib_pen = nib_models[self.model]
         self.check_secondary_ui()
         self._update_current_glyph_view()
 
-    def _nib_angle_callback(self, sender):
+    def _nib_angle_callback(self, sender) -> None:
         angle = int(round(sender.get()))
         self.angle = radians(angle)
         self.w.angle_text.set("%i" % angle)
         self._update_current_glyph_view()
 
-    def _nib_width_callback(self, sender):
+    def _nib_width_callback(self, sender) -> None:
         self.width = int(round(sender.get()))
         self.w.width_text.set("%i" % self.width)
         self.w.height_slider.setMaxValue(self.width)
         self._update_current_glyph_view()
 
-    def _nib_height_callback(self, sender):
+    def _nib_height_callback(self, sender) -> None:
         self.height = int(round(sender.get()))
         self.w.height_text.set("%i" % self.height)
         self.w.width_slider.setMinValue(self.height)
         self._update_current_glyph_view()
 
-    def _nib_superness_callback(self, sender):
+    def _nib_superness_callback(self, sender) -> None:
         self.superness = sender.get()
         self.w.superness_text.set("%0.2f" % self.superness)
         self._update_current_glyph_view()
 
-    def _glyph_local_callback(self, sender):
+    def _glyph_local_callback(self, sender) -> None:
         value = sender.get()
         # print("Local:", value)
         self.save_to_lib(self.glyph, def_local_key, False)
         if not value:
             self.load_settings()
 
-    def _draw_space_callback(self, sender):
+    def _draw_space_callback(self, sender) -> None:
         pass
 
-    def _draw_preview_callback(self, sender):
+    def _draw_preview_callback(self, sender) -> None:
         self._draw_in_preview_mode = sender.get()
         self._update_current_glyph_view()
 
-    def _draw_faces_callback(self, sender):
+    def _draw_faces_callback(self, sender) -> None:
         self._draw_nib_faces = sender.get()
         self._update_current_glyph_view()
 
@@ -277,7 +283,7 @@ class JKNib(BaseWindowController):
         # TODO: Rotate, add extreme points, rotate back
         return glyph.copy()
 
-    def _trace_callback(self, sender):
+    def _trace_callback(self, sender) -> None:
         if self.guide_layer is None:
             self._update_layers()
             return
@@ -295,19 +301,19 @@ class JKNib(BaseWindowController):
         glyph.draw(p)
         p.trace_path(self.glyph)
 
-    def _setup_draw(self, preview=False):
+    def _setup_draw(self, preview=False) -> None:
         pass
 
-    def draw_preview_glyph(self, preview=False):
+    def draw_preview_glyph(self, preview=False) -> None:
         raise NotImplementedError
 
-    def save_to_lib(self, font_or_glyph, libkey, value):
+    def save_to_lib(self, font_or_glyph, libkey, value) -> None:
         pass
 
-    def load_from_lib(self, font_or_glyph, libkey, attr=None):
+    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> None:
         pass
 
-    def save_settings(self):
+    def save_settings(self) -> None:
         has_local_settings = self.w.glyph_local.get()
         if has_local_settings:
             # print("Saving settings to", self.glyph)
@@ -341,7 +347,7 @@ class JKNib(BaseWindowController):
             ]:
                 self.save_to_lib(self.font, setting, value)
 
-    def load_settings(self):
+    def load_settings(self) -> None:
         has_local_settings = self.load_from_lib(self.glyph, def_local_key)
         if has_local_settings:
             print("Loading settings from glyph", self.glyph)

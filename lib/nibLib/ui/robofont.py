@@ -7,12 +7,12 @@ from mojo.drawingTools import fill, lineJoin, restore, save, strokeWidth, stroke
 from mojo.events import addObserver, removeObserver
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.UI import UpdateCurrentGlyphView
-
 from nibLib.ui import JKNib
 from nibLib import DEBUG, rf_guide_key
+from typing import Any, List
 
 
-def NibGuideGlyphFactory(glyph, font, angle):
+def NibGuideGlyphFactory(glyph, font, angle: float):
     # pen = ExtremePointPen(vertical=True, horizontal=True)
     g = RGlyph(glyph).copy()
     # g.rotateBy(degrees(-angle))
@@ -61,36 +61,41 @@ class JKNibRoboFont(JKNib):
         ("_font_resign", "fontResignCurrent"),
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(JKNibRoboFont, self).__init__(CurrentGlyph(), CurrentFont())
 
-    def envSpecificInit(self):
+    def envSpecificInit(self) -> None:
         self.setUpBaseWindowBehavior()
         self.addObservers()
         _registerFactory()
         self.load_settings()
 
-    def envSpecificQuit(self):
+    def envSpecificQuit(self) -> None:
         self.removeObservers()
         _unregisterFactory()
 
-    def addObservers(self):
+    def addObservers(self) -> None:
         for method, observer in self.observers:
             addObserver(self, method, observer)
 
-    def removeObservers(self):
+    def removeObservers(self) -> None:
         for method, observer in self.observers:
             removeObserver(self, observer)
         if self.w.draw_space.get():
             removeObserver(self, "spaceCenterDraw")
 
-    def getLayerList(self):
+    def getLayerList(self) -> List[str]:
+        """Return a list of layer names. The user can choose the guide layer from those.
+
+        Returns:
+            List[str]: The list of layer names.
+        """
         return ["foreground"] + self.font.layerOrder
 
-    def _update_current_glyph_view(self):
+    def _update_current_glyph_view(self) -> None:
         UpdateCurrentGlyphView()
 
-    def _draw_space_callback(self, sender):
+    def _draw_space_callback(self, sender) -> None:
         # RF-specific: Draw in space center
         value = sender.get()
         if value:
@@ -98,12 +103,12 @@ class JKNibRoboFont(JKNib):
         else:
             removeObserver(self, "spaceCenterDraw")
 
-    def get_guide_representation(self, glyph, font, angle):
+    def get_guide_representation(self, glyph: RGlyph, font, angle: float):
         return glyph.getLayer(self.guide_layer).getRepresentation(
             rf_guide_key, font=font, angle=angle
         )
 
-    def _trace_callback(self, sender):
+    def _trace_callback(self, sender) -> None:
         if self.guide_layer is None:
             self._update_layers()
             return
@@ -123,17 +128,17 @@ class JKNibRoboFont(JKNib):
         glyph.draw(p)
         p.trace_path(self.glyph)
 
-    def _draw_preview(self, notification, preview=False):
+    def _draw_preview(self, notification, preview=False) -> None:
         self.draw_preview_glyph(preview=preview)
 
-    def _preview(self, notification):
+    def _preview(self, notification) -> None:
         self.draw_preview_glyph(False)
 
-    def _previewFull(self, notification):
+    def _previewFull(self, notification) -> None:
         if self._draw_in_preview_mode:
             self.draw_preview_glyph(True)
 
-    def _glyph_changed(self, notification):
+    def _glyph_changed(self, notification) -> None:
         if self.glyph is not None:
             self.save_settings()
         self.glyph = notification["glyph"]
@@ -142,7 +147,7 @@ class JKNibRoboFont(JKNib):
         if self.glyph is not None:
             self.load_settings()
 
-    def _setup_draw(self, preview=False):
+    def _setup_draw(self, preview=False) -> None:
         if preview:
             fill(0)
             stroke(0)
@@ -155,7 +160,7 @@ class JKNibRoboFont(JKNib):
         stroke(None)
         lineJoin(self.line_join)
 
-    def draw_preview_glyph(self, preview=False):
+    def draw_preview_glyph(self, preview=False) -> None:
         if self.guide_layer is None:
             self._update_layers()
             return
@@ -178,7 +183,7 @@ class JKNibRoboFont(JKNib):
         glyph.draw(p)
         restore()
 
-    def save_to_lib(self, font_or_glyph, libkey, value):
+    def save_to_lib(self, font_or_glyph, libkey, value) -> None:
         if value is None:
             if libkey in font_or_glyph.lib:
                 del font_or_glyph.lib[libkey]
@@ -189,7 +194,7 @@ class JKNibRoboFont(JKNib):
             else:
                 font_or_glyph.lib[libkey] = value
 
-    def load_from_lib(self, font_or_glyph, libkey, attr=None):
+    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> Any:
         if font_or_glyph is None:
             return False
         value = font_or_glyph.lib.get(libkey, None)
@@ -199,17 +204,17 @@ class JKNibRoboFont(JKNib):
             setattr(self, attr, value)
         return value
 
-    def _font_resign(self, notification=None):
+    def _font_resign(self, notification=None) -> None:
         self.save_settings()
 
-    def _font_changed(self, notification):
+    def _font_changed(self, notification) -> None:
         self.font = notification["font"]
         if self.font is None:
             self.font_layers = []
         else:
             self.font_layers = self.getLayerList()
 
-    def _update_layers(self):
+    def _update_layers(self) -> None:
         if self.font is None:
             self.font_layers = []
         else:
