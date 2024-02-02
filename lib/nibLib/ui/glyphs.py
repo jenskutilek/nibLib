@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from GlyphsApp import Glyphs
-from GlyphsApp.drawingTools import *
+# from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
 from typing import List
 
