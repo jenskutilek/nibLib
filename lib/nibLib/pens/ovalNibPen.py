@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from math import atan2, cos, degrees, sin, tan
+from nibLib.typing import CCurve, TPoint
+from typing import List, Sequence, Tuple
 
 try:
     from mojo.drawingTools import *
@@ -17,7 +19,15 @@ from nibLib.pens.rectNibPen import RectNibPen
 
 
 class OvalNibPen(RectNibPen):
-    def _get_tangent_point(self, alpha):
+    def _get_tangent_point(self, alpha: float) -> TPoint:
+        """Return the point on the ellipse at the given angle alpha.
+
+        Args:
+            alpha (float): The angle in radians.
+
+        Returns:
+            TPoint: The tangent point.
+        """
 
         # Calculate the point on the ellipse
         # at the given tangent angle alpha.
@@ -29,14 +39,14 @@ class OvalNibPen(RectNibPen):
 
         return x, y
 
-    def _get_rotated_tangent_point(self, pt):
+    def _get_rotated_tangent_point(self, pt: TPoint) -> TPoint:
         x, y = pt
         x1 = x * cos(self.angle) - y * sin(self.angle)
         y1 = x * sin(self.angle) + y * cos(self.angle)
 
         return x1, y1
 
-    def _draw_nib_face(self, pt):
+    def _draw_nib_face(self, pt: TPoint) -> None:
         save()
         # fill(*self.path_fill)
         # strokeWidth(0)
@@ -46,16 +56,17 @@ class OvalNibPen(RectNibPen):
         oval(-self.a, -self.b, self.width, self.height)
         restore()
 
-    def _moveTo(self, pt):
+    def _moveTo(self, pt: TPoint) -> None:
         self.__currentPoint = pt
         self.contourStart = pt
         if not self.trace:
             self._draw_nib_face(pt)
 
-    def _lineTo(self, pt):
+    def _lineTo(self, pt: TPoint) -> None:
+        if self.__currentPoint is None:
+            raise ValueError
 
         # angle from the previous to the current point
-
         phi = angleBetweenPoints(self.__currentPoint, pt)
         # print(u"%0.2f°: %s -> %s" % (degrees(phi), self.__currentPoint, pt))
         pt0 = self._get_tangent_point(phi - self.angle)
@@ -91,7 +102,9 @@ class OvalNibPen(RectNibPen):
 
         self.__currentPoint = pt
 
-    def _curveToOne(self, pt1, pt2, pt3):
+    def _curveToOne(self, pt1: TPoint, pt2: TPoint, pt3: TPoint) -> None:
+        if self.__currentPoint is None:
+            raise ValueError
 
         # Break curve into line segments
         points = getPointsFromCurve((self.__currentPoint, pt1, pt2, pt3), 5)
@@ -168,8 +181,8 @@ class OvalNibPen(RectNibPen):
 
         self.__currentPoint = pt3
 
-    def _closePath(self):
+    def _closePath(self) -> None:
         self.__currentPoint = None
 
-    def _endPath(self):
+    def _endPath(self) -> None:
         self.__currentPoint = None

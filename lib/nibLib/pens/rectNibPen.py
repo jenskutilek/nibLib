@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from math import atan2, pi
+from nibLib.typing import CCurve, TPoint
+from typing import List, Sequence, Tuple
 
 
 try:
@@ -20,21 +22,27 @@ from nibLib.pens.bezier import normalize_quadrant, split_at_extrema
 
 
 class RectNibPen(NibPen):
-    def addPath(self, path=[]):
+    def addPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
         """
         Add a path to the nib path.
         """
-        if path:
-            path = [self.transform_reverse.transformPoints(pts) for pts in path]
-            if self.trace:
-                self.path.append(path)
-            else:
-                self.drawPath(path)
+        if path is None:
+            return
 
-    def drawPath(self, path=[]):
+        tr_path = [self.transform_reverse.transformPoints(pts) for pts in path]
+        if self.trace:
+            self.path.append(tr_path)
+        else:
+            self.drawPath(tr_path)
+
+    def drawPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
         """
-        Draw the points from path to a NSBezierPath.
+        Build a NSBezierPath from `path`. The NSBezierPath is then drawn in the current
+        context.
         """
+        if path is None:
+            return
+
         subpath = NSBezierPath.alloc().init()
         subpath.moveToPoint_(path[0][0])
         for p in path[1:]:
@@ -49,19 +57,19 @@ class RectNibPen(NibPen):
         NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, self.alpha).set()
         subpath.stroke()
 
-    def transformPoint(self, pt, d=1):
+    def transformPoint(self, pt: TPoint, d=1) -> TPoint:
         return (
             pt[0] + self.a * d,
             pt[1] + self.b,
         )
 
-    def transformPointHeight(self, pt, d=1):
+    def transformPointHeight(self, pt: TPoint, d=1) -> TPoint:
         return (
             pt[0] + self.a * d,
             pt[1] - self.b,
         )
 
-    def transformedRect(self, P):
+    def transformedRect(self, P: TPoint) -> Tuple[TPoint, TPoint, TPoint, TPoint]:
         """
         Transform a point to a rect describing the four points of the nib face.
 
@@ -75,12 +83,12 @@ class RectNibPen(NibPen):
         D = self.transformPoint(P, -1)
         return A, B, C, D
 
-    def _moveTo(self, pt):
+    def _moveTo(self, pt: TPoint) -> None:
         t = self.transform.transformPoint(pt)
         self.__currentPoint = t
         self.contourStart = pt
 
-    def _lineTo(self, pt):
+    def _lineTo(self, pt: TPoint) -> None:
         """
         Points of the nib face:
 
@@ -93,6 +101,9 @@ class RectNibPen(NibPen):
         The points A2, B2, C2, D2 are the points of the nib face translated to
         the end of the current stroke.
         """
+        if self.__currentPoint is None:
+            raise ValueError
+
         t = self.transform.transformPoint(pt)
 
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
@@ -124,6 +135,9 @@ class RectNibPen(NibPen):
         self.__currentPoint = t
 
     def _curveToOne(self, pt1, pt2, pt3):
+        if self.__currentPoint is None:
+            raise ValueError
+
         # Insert extrema at angle
         segments = split_at_extrema(
             self.__currentPoint, pt1, pt2, pt3, transform=self.transform
@@ -133,6 +147,8 @@ class RectNibPen(NibPen):
             self._curveToOneNoExtrema(pt1, pt2, pt3)
 
     def _curveToOneNoExtrema(self, pt1, pt2, pt3):
+        if self.__currentPoint is None:
+            raise ValueError
 
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
 
@@ -298,4 +314,5 @@ class RectNibPen(NibPen):
         if self.__currentPoint:
             # A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
             # self.addPath(((A1,), (B1,), (C1,), (D1,)))
-            self.__currentPoint = None
+            pass
+        self.__currentPoint = None

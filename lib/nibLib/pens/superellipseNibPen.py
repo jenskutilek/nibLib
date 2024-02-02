@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from math import cos, degrees, pi, sin
 import operator
+
+from math import cos, degrees, pi, sin
+from nibLib.typing import CCurve, TPoint
+from typing import List, Sequence, Tuple
 
 try:
     from mojo.drawingTools import *
@@ -10,11 +13,9 @@ except ImportError:
 
 from fontTools.misc.transform import Transform
 
-from beziers.path import BezierPath as SCBezierPath
-from beziers.point import Point as SCPoint
-
 from nibLib.geometry import (
     angleBetweenPoints,
+    getPathFromPoints,
     getPointsFromCurve,
     optimizePointPath,
 )
@@ -32,7 +33,7 @@ DEBUG_CURVE_POINTS = False
 
 
 class SuperellipseNibPen(OvalNibPen):
-    def setup_nib(self):
+    def setup_nib(self) -> None:
         steps = 100
         points = []
         # Build a quarter of the superellipse with the requested number of steps
@@ -57,11 +58,11 @@ class SuperellipseNibPen(OvalNibPen):
         self.nib_face_path = points
         self.nib_face_path_transformed = points.copy()
         self.setup_nib_face_path()
-        self.nib_drawing_path = self._curve_from_lines(points)
+        self.nib_drawing_path = getPathFromPoints(points)
         self.nib_drawing_path_transformed = self.nib_drawing_path.copy()
         self.cache_angle = None
 
-    def _get_rotated_point(self, pt, phi):
+    def _get_rotated_point(self, pt: TPoint, phi: float) -> TPoint:
         x, y = pt
         cp = cos(phi)
         sp = sin(phi)
@@ -70,12 +71,12 @@ class SuperellipseNibPen(OvalNibPen):
 
         return x1, y1
 
-    def transform_nib_path(self, alpha):
+    def transform_nib_path(self, alpha: float) -> None:
         t = Transform().rotate(-alpha)
         self.nib_face_path_transformed = t.transformPoints(self.nib_face_path)
         self.cache_angle = alpha
 
-    def _get_tangent_point(self, alpha):
+    def _get_tangent_point(self, alpha: float) -> TPoint:
 
         # Calculate the point on the superellipse
         # at the given tangent angle alpha.
@@ -90,13 +91,16 @@ class SuperellipseNibPen(OvalNibPen):
         x, y = Transform().rotate(alpha).transformPoint((x, y))  # .rotate(-self.angle)
         return x, y
 
-    def _moveTo(self, pt):
+    def _moveTo(self, pt: TPoint) -> None:
         t = self.transform.transformPoint(pt)
         self.__currentPoint = t
         self.contourStart = pt
         self._draw_nib_face(pt)
 
-    def _lineTo(self, pt):
+    def _lineTo(self, pt: TPoint) -> None:
+        if self.__currentPoint is None:
+            raise ValueError
+
         t = self.transform.transformPoint(pt)
 
         # angle from the previous to the current point
@@ -115,7 +119,7 @@ class SuperellipseNibPen(OvalNibPen):
 
         self.__currentPoint = t
 
-    def _curveToOne(self, pt1, pt2, pt3):
+    def _curveToOne(self, pt1: TPoint, pt2: TPoint, pt3: TPoint) -> None:
         if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
             save()
 
@@ -175,8 +179,8 @@ class SuperellipseNibPen(OvalNibPen):
         if inner and outer:
             if self.trace:
                 outer.reverse()
-                outer = self._curve_from_lines(outer)
-                inner = self._curve_from_lines(inner)
+                outer = getPathFromPoints(outer)
+                inner = getPathFromPoints(inner)
                 self.path.append(outer + inner)
             else:
                 inner = optimizePointPath(inner, 0.3)
@@ -190,14 +194,14 @@ class SuperellipseNibPen(OvalNibPen):
         if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
             restore()
 
-    def _closePath(self):
+    def _closePath(self) -> None:
         self.lineTo(self.contourStart)
         self.__currentPoint = None
 
-    def _endPath(self):
+    def _endPath(self) -> None:
         self.__currentPoint = None
 
-    def setup_nib_face_path(self):
+    def setup_nib_face_path(self) -> None:
         # Build a bezier path to more easily draw the nib face
         points = self.nib_face_path
         nib = self.nib_face_bezier_path = NSBezierPath.alloc().init()
@@ -206,7 +210,7 @@ class SuperellipseNibPen(OvalNibPen):
             nib.lineToPoint_(p)
         nib.closePath()
 
-    def _draw_nib_face(self, pt):
+    def _draw_nib_face(self, pt) -> None:
         if self.trace:
             x, y = pt
             nib = []
@@ -223,31 +227,6 @@ class SuperellipseNibPen(OvalNibPen):
             rotate(degrees(self.angle))
             self.nib_face_bezier_path.stroke()
             restore()
-
-    def _curve_from_lines(self, point_tuple_list: list) -> list:
-        error = 50.0
-        cornerTolerance = 20.0
-        maxSegments = 20
-        curve_points = SCBezierPath().fromPoints(
-            [SCPoint(p[0], p[1]) for p in point_tuple_list],
-            error=1.0,
-            cornerTolerance=1.0,
-            maxSegments=10000,
-        )
-
-        # Reconvert the BezierPath segments to our segment type
-        point_tuple_list = []
-        first = True
-        for segment in curve_points.asSegments():
-            segment_tuple = []
-            if first:
-                # For the first segment, add the move point
-                p = segment[0]
-                point_tuple_list.append([(p.x, p.y)])
-            for p in segment[1:]:
-                segment_tuple.append((p.x, p.y))
-            point_tuple_list.append(segment_tuple)
-        return point_tuple_list
 
     def trace_path(self, out_glyph):
         from mojo.roboFont import RGlyph

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from math import atan2, pi
+from nibLib.typing import CCurve, TPoint
+from typing import List, Sequence, Tuple
 
 
 try:
@@ -21,66 +23,6 @@ from nibLib.pens.bezier import normalize_quadrant, split_at_extrema
 
 
 class FakeOvalNibPen(RectNibPen):
-    def addPath(self, path=[]):
-        """
-        Add a path to the nib path.
-        """
-        if path:
-            path = [self.transform_reverse.transformPoints(pts) for pts in path]
-            if self.trace:
-                self.path.append(path)
-            else:
-                self.drawPath(path)
-
-    def drawPath(self, path=[]):
-        """
-        Draw the points from path to a NSBezierPath.
-        """
-        subpath = NSBezierPath.alloc().init()
-        subpath.moveToPoint_(path[0][0])
-        for p in path[1:]:
-            if len(p) == 3:
-                # curve
-                A, B, C = p
-                subpath.curveToPoint_controlPoint1_controlPoint2_(C, A, B)
-            else:
-                subpath.lineToPoint_(p[0])
-
-        subpath.closePath()
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, self.alpha).set()
-        subpath.stroke()
-
-    def transformPoint(self, pt, d=1):
-        return (
-            pt[0] + self.a * d,
-            pt[1] + self.b,
-        )
-
-    def transformPointHeight(self, pt, d=1):
-        return (
-            pt[0] + self.a * d,
-            pt[1] - self.b,
-        )
-
-    def transformedRect(self, P):
-        """
-        Transform a point to a rect describing the four points of the nib face.
-
-          D-------------------------C
-          |            P            |
-          A-------------------------B
-        """
-        A = self.transformPointHeight(P, -1)
-        B = self.transformPointHeight(P)
-        C = self.transformPoint(P)
-        D = self.transformPoint(P, -1)
-        return A, B, C, D
-
-    def _moveTo(self, pt):
-        t = self.transform.transformPoint(pt)
-        self.__currentPoint = t
-        self.contourStart = pt
-
     def _lineTo(self, pt):
         """
         Points of the nib face:
@@ -94,20 +36,23 @@ class FakeOvalNibPen(RectNibPen):
         The points A2, B2, C2, D2 are the points of the nib face translated to
         the end of the current stroke.
         """
+        if self.__currentPoint is None:
+            raise ValueError
+
         t = self.transform.transformPoint(pt)
 
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
         A2, B2, C2, D2 = self.transformedRect(t)
 
         AB1 = half(A1, B1)
-        BC1 = half(B1, C1)
+        # BC1 = half(B1, C1)
         CD1 = half(C1, D1)
         DA1 = half(D1, A1)
 
         AB2 = half(A2, B2)
         BC2 = half(B2, C2)
         CD2 = half(C2, D2)
-        DA2 = half(D2, A2)
+        # DA2 = half(D2, A2)
 
         x1, y1 = self.__currentPoint
         x2, y2 = t
@@ -136,17 +81,9 @@ class FakeOvalNibPen(RectNibPen):
 
         self.__currentPoint = t
 
-    def _curveToOne(self, pt1, pt2, pt3):
-        # Insert extrema at angle
-        segments = split_at_extrema(
-            self.__currentPoint, pt1, pt2, pt3, transform=self.transform
-        )
-        for segment in segments:
-            pt0, pt1, pt2, pt3 = segment
-            self._curveToOneNoExtrema(pt1, pt2, pt3)
-
     def _curveToOneNoExtrema(self, pt1, pt2, pt3):
-        print("_curveToOneNoExtrema", pt1, pt2, pt3)
+        if self.__currentPoint is None:
+            raise ValueError
 
         A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
 
@@ -172,10 +109,10 @@ class FakeOvalNibPen(RectNibPen):
 
         Q1 = rho1 / pi
         Q2 = rho2 / pi
-        print(f"       Q1: {Q1}, Q2: {Q2}")
+        # print(f"       Q1: {Q1}, Q2: {Q2}")
         Q1 = normalize_quadrant(rho1 / pi)
         Q2 = normalize_quadrant(rho2 / pi)
-        print(f"    -> Q1: {Q1}, Q2: {Q2}")
+        # print(f"    -> Q1: {Q1}, Q2: {Q2}")
 
         """
         Points of the nib face:
@@ -189,28 +126,14 @@ class FakeOvalNibPen(RectNibPen):
         The points A2, B2, C2, D2 are the points of the nib face translated to
         the end of the current stroke.
         """
-        seq0 = (
-            (B2,),
-            (C2,),
-            (
-                Cc2,
-                Cc1,
-                C1,
-            ),
-            (A1,),
-            (Ac1, Ac2, A2),
-        )
+        seq0 = ((B2,), (C2,), (Cc2, Cc1, C1), (A1,), (Ac1, Ac2, A2))
         seq1 = (
             (half(A1, D1),),
             (half(A1, B1),),
             (Bc1, Bc2, half(B2, C2)),
             (half(C2, D2),),
             (half(D2, A2),),
-            (
-                Dc2,
-                Dc1,
-                half(C1, D1),
-            ),
+            (Dc2, Dc1, half(C1, D1)),
         )
         seq2 = ((B1,), (C1,), (Cc1, Cc2, C2), (D2,), (A2,), (Ac2, Ac1, A1))
         seq3 = ((A2,), (B2,), (Bc2, Bc1, B1), (C1,), (D1,), (Dc1, Dc2, D2))
@@ -331,14 +254,3 @@ class FakeOvalNibPen(RectNibPen):
         self.addPath(path)
 
         self.__currentPoint = pt3
-
-    def _closePath(self):
-        # Glyphs calls closePath though it is not really needed there ...?
-        self._lineTo(self.contourStart)
-        self.__currentPoint = None
-
-    def _endPath(self):
-        if self.__currentPoint:
-            # A1, B1, C1, D1 = self.transformedRect(self.__currentPoint)
-            # self.addPath(((A1,), (B1,), (C1,), (D1,)))
-            self.__currentPoint = None

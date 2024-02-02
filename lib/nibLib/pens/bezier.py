@@ -7,9 +7,11 @@ from fontTools.misc.bezierTools import (
     epsilon,
 )
 from fontTools.misc.transform import Transform
+from nibLib.typing import TPoint
+from typing import List, Tuple
 
 
-def normalize_quadrant(q):
+def normalize_quadrant(q: float) -> float:
     r = 2 * q
     nearest = round(r)
     e = abs(nearest - r)
@@ -19,7 +21,9 @@ def normalize_quadrant(q):
     return rounded
 
 
-def split_at_extrema(pt1, pt2, pt3, pt4, transform=Transform()):
+def split_at_extrema(
+    pt1: TPoint, pt2: TPoint, pt3: TPoint, pt4: TPoint, transform=Transform()
+) -> List[Tuple[TPoint, TPoint, TPoint, TPoint]]:
     """
     Add extrema to a cubic curve, after applying a transformation.
     Example ::
