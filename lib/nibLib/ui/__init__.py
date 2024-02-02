@@ -291,10 +291,10 @@ class JKNib(BaseWindowController):
             self.w.superness_slider.enable(True)
         else:
             self.w.superness_slider.enable(False)
-        if self.model == "Rectangle":
-            self.w.draw_faces.enable(True)
-        else:
-            self.w.draw_faces.enable(False)
+        # if self.model == "Rectangle":
+        #     self.w.draw_faces.enable(True)
+        # else:
+        #     self.w.draw_faces.enable(False)
 
     @property
     def guide_layer_name(self) -> str | None:
