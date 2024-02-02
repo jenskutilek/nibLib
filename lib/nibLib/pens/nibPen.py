@@ -55,6 +55,7 @@ class NibPen(BasePen):
         # Used for drawing
         self.color = show_nib_faces
         self.highlight_nib_faces = False
+        self._scale = 1.0
 
         # Used for superelliptical nibs
         self.nib_superness = nib_superness
@@ -103,7 +104,7 @@ class NibPen(BasePen):
         if self.trace:
             self.path.append(tr_path)
         else:
-            draw_path(tr_path)
+            draw_path(tr_path, width=1 / self._scale)
 
     def addPathRaw(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
         """
@@ -116,7 +117,7 @@ class NibPen(BasePen):
         if self.trace:
             self.path.append(path)
         else:
-            draw_path(path)
+            draw_path(path, width=1 / self._scale)
 
     def trace_path(self, out_glyph, clear=True) -> None:
         """Trace the path into the supplied glyph.

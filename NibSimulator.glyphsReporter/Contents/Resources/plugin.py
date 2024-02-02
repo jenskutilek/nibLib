@@ -39,12 +39,7 @@ class NibSimulator(ReporterPlugin):
         if layer != self.w.glyph:
             self.w.glyph = layer
 
-        # save()
-        # strokeWidth(1 / self.getScale())
-        # stroke(0.6, 0.7, 0.9)
-        # lineJoin("round")
-        self.w.draw_preview_glyph()
-        # restore()
+        self.w.draw_preview_glyph(scale=self.getScale())
 
     @objc.python_method
     def window_will_close(self):

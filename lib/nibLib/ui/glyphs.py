@@ -47,7 +47,7 @@ class JKNibGlyphs(JKNib):
                 self.guide_layer = layer
                 break
 
-    def draw_preview_glyph(self, preview=False) -> None:
+    def draw_preview_glyph(self, preview=False, scale=1.0) -> None:
         if self.guide_layer_name is None:
             self._update_layers()
             return
@@ -62,6 +62,7 @@ class JKNibGlyphs(JKNib):
             self._draw_nib_faces,
             nib_superness=self.superness,
         )
+        p._scale = scale
         self.guide_layer.draw(p)
         # restore()
 
