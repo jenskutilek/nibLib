@@ -31,7 +31,7 @@ class NibSimulator(ReporterPlugin):
         self.w = None
 
     @objc.python_method
-    def foreground(self, layer):
+    def background(self, layer):
         if self.w is None:
             return
 
