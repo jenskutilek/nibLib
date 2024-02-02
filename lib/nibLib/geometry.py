@@ -52,7 +52,6 @@ def getPathFromPoints(
         cornerTolerance=1.0,
         maxSegments=10000,
     )
-    print(curve_points.asSegments())
 
     # Reconvert Simon's BezierPath segments to our segment type
     curves: List[Tuple[TPoint] | Tuple[TPoint, TPoint, TPoint]] = []
