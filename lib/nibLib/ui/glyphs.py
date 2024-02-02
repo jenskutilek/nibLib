@@ -10,7 +10,9 @@ class JKNibGlyphs(JKNib):
     settings_attr = "userData"
 
     def envSpecificInit(self) -> None:
-        pass
+        self.w.draw_space.enable(False)
+        self.w.draw_preview.enable(False)
+        self.w.draw_faces.enable(False)
 
     def envSpecificQuit(self) -> None:
         pass
