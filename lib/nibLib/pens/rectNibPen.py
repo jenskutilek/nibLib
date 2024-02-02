@@ -1,62 +1,13 @@
 from __future__ import annotations
 
 from math import atan2, pi
-from nibLib.typing import CCurve, TPoint
-from typing import List, Sequence, Tuple
-
-
-try:
-    from mojo.drawingTools import *
-except ImportError:
-    try:
-        from GlyphsApp.drawingTools import *
-    except ImportError:
-        pass
-
-
-from AppKit import NSBezierPath, NSColor
-
-
-from nibLib.pens.nibPen import NibPen
 from nibLib.pens.bezier import normalize_quadrant, split_at_extrema
+from nibLib.pens.nibPen import NibPen
+from nibLib.typing import TPoint
+from typing import Tuple
 
 
 class RectNibPen(NibPen):
-    def addPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
-        """
-        Add a path to the nib path.
-        """
-        if path is None:
-            return
-
-        tr_path = [self.transform_reverse.transformPoints(pts) for pts in path]
-        if self.trace:
-            self.path.append(tr_path)
-        else:
-            self.drawPath(tr_path)
-
-    def drawPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
-        """
-        Build a NSBezierPath from `path`. The NSBezierPath is then drawn in the current
-        context.
-        """
-        if path is None:
-            return
-
-        subpath = NSBezierPath.alloc().init()
-        subpath.moveToPoint_(path[0][0])
-        for p in path[1:]:
-            if len(p) == 3:
-                # curve
-                A, B, C = p
-                subpath.curveToPoint_controlPoint1_controlPoint2_(C, A, B)
-            else:
-                subpath.lineToPoint_(p[0])
-
-        subpath.closePath()
-        NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, self.alpha).set()
-        subpath.stroke()
-
     def transformPoint(self, pt: TPoint, d=1) -> TPoint:
         return (
             pt[0] + self.a * d,

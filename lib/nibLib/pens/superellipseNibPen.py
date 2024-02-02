@@ -2,17 +2,9 @@ from __future__ import annotations
 
 import operator
 
-from math import cos, degrees, pi, sin
-from nibLib.typing import CCurve, TPoint
-from typing import List, Sequence, Tuple
-
-try:
-    from mojo.drawingTools import *
-except ImportError:
-    from GlyphsApp.drawingTools import *
-
 from fontTools.misc.transform import Transform
-
+from math import cos, degrees, pi, sin
+from nibLib.typing import TPoint
 from nibLib.geometry import (
     angleBetweenPoints,
     getPathFromPoints,
@@ -101,7 +93,10 @@ class SuperellipseNibPen(OvalNibPen):
         if self.__currentPoint is None:
             raise ValueError
 
+        cx, cy = self.__currentPoint
+
         t = self.transform.transformPoint(pt)
+        tx, ty = t
 
         # angle from the previous to the current point
         phi = angleBetweenPoints(self.__currentPoint, t)
@@ -109,10 +104,10 @@ class SuperellipseNibPen(OvalNibPen):
 
         x, y = self._get_tangent_point(phi)
 
-        p0 = (self.__currentPoint[0] + x, self.__currentPoint[1] + y)
-        p1 = (t[0] + x, t[1] + y)
-        p2 = (t[0] - x, t[1] - y)
-        p3 = (self.__currentPoint[0] - x, self.__currentPoint[1] - y)
+        p0 = (cx + x, cy + y)
+        p1 = (tx + x, ty + y)
+        p2 = (tx - x, ty - y)
+        p3 = (cx - x, cy - y)
 
         self.addPath([[p0], [p3], [p2], [p1]])
         self._draw_nib_face(pt)
@@ -120,8 +115,11 @@ class SuperellipseNibPen(OvalNibPen):
         self.__currentPoint = t
 
     def _curveToOne(self, pt1: TPoint, pt2: TPoint, pt3: TPoint) -> None:
-        if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
-            save()
+        if self.__currentPoint is None:
+            raise ValueError
+
+        # if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
+        #     save()
 
         t1 = self.transform.transformPoint(pt1)
         t2 = self.transform.transformPoint(pt2)
@@ -131,13 +129,13 @@ class SuperellipseNibPen(OvalNibPen):
         points = getPointsFromCurve((self.__currentPoint, t1, t2, t3), 5)
 
         # Draw points of center line
-        if DEBUG_CENTER_POINTS:
-            stroke(None)
-            strokeWidth(0)
-            fill(0, 0, 0, self.alpha)
-            for p in points:
-                x, y = self.transform_reverse.transformPoint(p)
-                rect(x - 1, y - 1, 2, 2)
+        # if DEBUG_CENTER_POINTS:
+        #     stroke(None)
+        #     strokeWidth(0)
+        #     fill(0, 0, 0, self.alpha)
+        #     for p in points:
+        #         x, y = self.transform_reverse.transformPoint(p)
+        #         rect(x - 1, y - 1, 2, 2)
 
         # Calculate angles between points
 
@@ -191,8 +189,8 @@ class SuperellipseNibPen(OvalNibPen):
             self._draw_nib_face(pt3)
 
         self.__currentPoint = t3
-        if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
-            restore()
+        # if not self.trace and DEBUG_CENTER_POINTS or DEBUG_CURVE_POINTS:
+        #     restore()
 
     def _closePath(self) -> None:
         self.lineTo(self.contourStart)
@@ -203,6 +201,7 @@ class SuperellipseNibPen(OvalNibPen):
 
     def setup_nib_face_path(self) -> None:
         # Build a bezier path to more easily draw the nib face
+        return
         points = self.nib_face_path
         nib = self.nib_face_bezier_path = NSBezierPath.alloc().init()
         nib.moveToPoint_(points[0])
@@ -210,7 +209,8 @@ class SuperellipseNibPen(OvalNibPen):
             nib.lineToPoint_(p)
         nib.closePath()
 
-    def _draw_nib_face(self, pt) -> None:
+    def _draw_nib_face(self, pt: TPoint) -> None:
+        return
         if self.trace:
             x, y = pt
             nib = []
