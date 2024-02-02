@@ -60,6 +60,7 @@ class JKNibRoboFont(JKNib):
         ("_font_changed", "fontBecameCurrent"),
         ("_font_resign", "fontResignCurrent"),
     )
+    settings_attr = "lib"
 
     def __init__(self) -> None:
         super(JKNibRoboFont, self).__init__(CurrentGlyph(), CurrentFont())
@@ -194,27 +195,6 @@ class JKNibRoboFont(JKNib):
         )
         glyph.draw(p)
         restore()
-
-    def save_to_lib(self, font_or_glyph, libkey, value) -> None:
-        if value is None:
-            if libkey in font_or_glyph.lib:
-                del font_or_glyph.lib[libkey]
-        else:
-            if libkey in font_or_glyph.lib:
-                if font_or_glyph.lib[libkey] != value:
-                    font_or_glyph.lib[libkey] = value
-            else:
-                font_or_glyph.lib[libkey] = value
-
-    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> Any:
-        if font_or_glyph is None:
-            return False
-        value = font_or_glyph.lib.get(libkey, None)
-        if value is None:
-            return False
-        if attr is not None:
-            setattr(self, attr, value)
-        return value
 
     def _font_resign(self, notification=None) -> None:
         self.save_settings()

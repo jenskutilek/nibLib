@@ -3,11 +3,11 @@ from __future__ import annotations
 from GlyphsApp import Glyphs
 from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
-from typing import Any, List
+from typing import List
 
 
 class JKNibGlyphs(JKNib):
-    user_data_attr = "userData"
+    settings_attr = "userData"
 
     def envSpecificInit(self) -> None:
         pass
@@ -16,29 +16,18 @@ class JKNibGlyphs(JKNib):
         pass
 
     def getLayerList(self) -> List[str]:
-        return [layer.name for layer in self.glyph.parent.layers]
+        if self.font is None:
+            return []
 
-    def save_to_lib(self, font_or_glyph, libkey, value) -> None:
-        if value is None:
-            if font_or_glyph.userData and libkey in font_or_glyph.userData:
-                del font_or_glyph.userData[libkey]
-        else:
-            if font_or_glyph.userData and libkey in font_or_glyph.userData:
-                if font_or_glyph.userData[libkey] != value:
-                    font_or_glyph.userData[libkey] = value
-            else:
-                font_or_glyph.userData[libkey] = value
+        master_id = self.glyph.master.id
+        return [
+            layer.name
+            for layer in self.glyph.parent.layers
+            if layer.associatedMasterId == master_id
+        ]
 
-    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> Any:
-        if font_or_glyph is None:
-            return False
-        value = font_or_glyph.userData.get(libkey, None)
-        if attr is not None:
-            if value is not None:
-                setattr(self, attr, value)
-        return value
-
-    def update_current_view(self) -> None:
+    def _update_current_glyph_view(self) -> None:
+        # Make sure the current view gets redrawn
         currentTabView = Glyphs.font.currentTab
         if currentTabView:
             currentTabView.graphicView().setNeedsDisplay_(True)

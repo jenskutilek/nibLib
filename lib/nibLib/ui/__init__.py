@@ -350,10 +350,32 @@ class JKNib(BaseWindowController):
         raise NotImplementedError
 
     def save_to_lib(self, font_or_glyph, libkey, value) -> None:
-        pass
+        if font_or_glyph is None:
+            print("Can not save, there is nowhere to save to")
+            return
 
-    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> None:
-        pass
+        lib = getattr(font_or_glyph, self.settings_attr)
+        if value is None:
+            if lib and libkey in lib:
+                del lib[libkey]
+        else:
+            if lib and libkey in lib:
+                if lib[libkey] != value:
+                    lib[libkey] = value
+            else:
+                lib[libkey] = value
+
+    def load_from_lib(self, font_or_glyph, libkey, attr=None) -> Any:
+        if font_or_glyph is None:
+            return False
+
+        lib = getattr(font_or_glyph, self.settings_attr)
+        value = lib.get(libkey, None)
+        if attr is not None:
+            if value is not None:
+                setattr(self, attr, value)
+        # print("load:", libkey, value)
+        return value
 
     def save_settings(self) -> None:
         has_local_settings = self.w.glyph_local.get()
@@ -402,13 +424,13 @@ class JKNib(BaseWindowController):
             for setting, attr in [
                 (def_width_key, "width"),
                 (def_height_key, "height"),
-                (def_guide_key, "guide_layer"),
+                (def_guide_key, "guide_layer_name"),
                 (def_super_key, "superness"),
                 (def_model_key, "model"),
             ]:
                 self.load_from_lib(self.glyph, setting, attr)
         else:
-            print("Loading settings from font", self.font)
+            # print("Loading settings from font", self.font)
             self.w.glyph_local.set(False)
             angle = self.load_from_lib(self.font, def_angle_key)
             if angle is None:
