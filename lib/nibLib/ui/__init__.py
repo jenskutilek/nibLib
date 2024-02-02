@@ -20,7 +20,9 @@ from typing import Any, List
 
 
 class JKNib(BaseWindowController):
-    def __init__(self, glyph, font) -> None:
+    settings_attr = "lib"
+
+    def __init__(self, glyph, font, caller=None) -> None:
         self.model = "Superellipse"
         self.angle = radians(30)
         self.width = 60
@@ -35,6 +37,7 @@ class JKNib(BaseWindowController):
 
         self.glyph = glyph
         self.font = font
+        self.caller = caller
 
         # window dimensions
         width = 300
@@ -160,6 +163,7 @@ class JKNib(BaseWindowController):
         self._update_layers()
         # self._update_ui()
         # self.w.trace_outline.enable(False)
+        self.w.bind("close", self.windowCloseCallback)
         self.w.open()
         self._update_current_glyph_view()
 
@@ -169,8 +173,9 @@ class JKNib(BaseWindowController):
     def windowCloseCallback(self, sender) -> None:
         if self.font is not None:
             self.save_settings()
+        if self.caller is not None:
+            self.caller.window_will_close()
         self.envSpecificQuit()
-        super(JKNib, self).windowCloseCallback(sender)
         self._update_current_glyph_view()
 
     def envSpecificQuit(self) -> None:

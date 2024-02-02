@@ -61,6 +61,10 @@ class NibSimulator(ReporterPlugin):
     #         for component in layer.components:
     #             component.bezierPath.fill()
 
+    @objc.python_method
+    def window_will_close(self):
+        self.w = None
+
     def openSettingsWindow_(self, sender):
         self.w = JKNibGlyphs(None, None)
 
