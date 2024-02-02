@@ -103,7 +103,7 @@ class JKNib(BaseWindowController):
         self.w.superness_label = vanilla.TextBox((8, y, col - 8, 20), "Super")
         self.w.superness_slider = vanilla.Slider(
             (col, y, -48, 20),
-            minValue=1.01,
+            minValue=1.1,
             maxValue=15.0,
             value=self.superness,
             callback=self._nib_superness_callback,
