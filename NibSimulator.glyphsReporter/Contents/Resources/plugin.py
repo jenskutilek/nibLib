@@ -72,41 +72,6 @@ class NibSimulator(ReporterPlugin):
     def openSettingsWindow_(self, sender):
         self.w = JKNibGlyphs(None, None)
 
-    # @objc.python_method
-    # def conditionalContextMenus(self):
-
-    #     # Empty list of context menu items
-    #     contextMenus = []
-
-    #     # Execute only if layers are actually selected
-    #     if Glyphs.font.selectedLayers:
-    #         layer = Glyphs.font.selectedLayers[0]
-
-    #         # Exactly one object is selected and it’s an anchor
-    #         if len(layer.selection) == 1 and type(layer.selection[0]) == GSAnchor:
-
-    #             # Add context menu item
-    #             contextMenus.append(
-    #                 {
-    #                     "name": Glyphs.localize(
-    #                         {
-    #                             "en": "Do something else",
-    #                             "de": "Tu etwas anderes",
-    #                             "fr": "Faire aute chose",
-    #                             "es": "Hacer algo más",
-    #                             "pt": "Faça outra coisa",
-    #                         }
-    #                     ),
-    #                     "action": self.doSomethingElse_,
-    #                 }
-    #             )
-
-    #     # Return list of context menu items
-    #     return contextMenus
-
-    # def doSomethingElse_(self, sender):
-    #     print("Just did something else")
-
     @objc.python_method
     def __file__(self):
         """Please leave this method unchanged"""
