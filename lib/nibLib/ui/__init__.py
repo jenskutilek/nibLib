@@ -3,9 +3,8 @@ from __future__ import annotations
 import vanilla
 
 from defconAppKit.windows.baseWindow import BaseWindowController
-from math import degrees, pi, radians
+from math import degrees, radians
 from nibLib import (
-    DEBUG,
     def_angle_key,
     def_width_key,
     def_height_key,
@@ -13,7 +12,6 @@ from nibLib import (
     def_guide_key,
     def_super_key,
     def_model_key,
-    rf_guide_key,
 )
 from nibLib.pens import nib_models
 from typing import Any, List
@@ -37,8 +35,8 @@ class JKNib(BaseWindowController):
         self._draw_nib_faces = False
         self._draw_in_preview_mode = False
 
-        self.glyph = glyph
-        self.font = font
+        self._glyph = glyph
+        self._font = font
         self.caller = caller
 
         # window dimensions
@@ -169,6 +167,53 @@ class JKNib(BaseWindowController):
         self.w.open()
         self._update_current_glyph_view()
 
+    @property
+    def font(self):
+        """
+        Return the font or master, whatever stores the nib settings.
+
+        Returns:
+            None | GSFontMaster | RFont: The font.
+        """
+        return self._font
+
+    @font.setter
+    def font(self, value) -> None:
+        if value != self._font:
+            self.save_settings()
+
+        self._font = value
+        if value is None:
+            self.glyph = None
+            self.guide_layer_name = None
+        else:
+            self.load_settings()
+
+    @property
+    def glyph(self):
+        """
+        Return the glyph or layer, whatever the nib writes in.
+
+        Returns:
+            None | GSLayer | RGlyph: The layer.
+        """
+        return self._glyph
+
+    @glyph.setter
+    def glyph(self, value) -> None:
+        print(f"Set glyph: {value}")
+        if value != self._glyph:
+            self.save_settings()
+
+        self._glyph = value
+        if value is None:
+            self.guide_layer_name = None
+        else:
+            self.load_settings()
+            # Update the layers; also tries to find the current guide layer in the new
+            # glyph
+            self._update_layers()
+
     def envSpecificInit(self) -> None:
         pass
 
@@ -188,11 +233,20 @@ class JKNib(BaseWindowController):
         pass
 
     def _update_layers(self) -> None:
-        """Called when the layer list in the UI should be updated. Sets the UI layer
-        list to the new layer names and selects the last layer, presumably the
-        background.
         """
-        pass
+        Called when the layer list in the UI should be updated. Sets the UI layer
+        list to the new layer names and selects the default guide layer.
+        """
+        cur_layer = self.guide_layer_name
+        self.font_layers = self.getLayerList()
+        self.w.guide_select.setItems(self.font_layers)
+        if self.font_layers:
+            if cur_layer in self.font_layers:
+                self.guide_layer_name = cur_layer
+            else:
+                last_layer = len(self.font_layers) - 1
+                self.w.guide_select.set(last_layer)
+                self.guide_layer_name = self.font_layers[last_layer]
 
     def getLayerList(self) -> List[str]:
         """Return a list of layer names. The user can choose the guide layer from those.
@@ -256,12 +310,12 @@ class JKNib(BaseWindowController):
             self.w.guide_select.setItem(self._guide_layer_name)
             self._set_guide_layer(self._guide_layer_name)
         self._update_current_glyph_view()
-    
+
     def _set_guide_layer(self, name: str) -> None:
         """
         Override in subclass to set self.guide_layer to the actual layer object.
         """
-        pass
+        raise NotImplementedError
 
     def _guide_select_callback(self, sender) -> None:
         """

@@ -35,27 +35,16 @@ class NibSimulator(ReporterPlugin):
         if self.w is None:
             return
 
+        # If the layer has changed, we need a new guide layer
+        if layer != self.w.glyph:
+            self.w.glyph = layer
+
+        # save()
+        # strokeWidth(1 / self.getScale())
+        # stroke(0.6, 0.7, 0.9)
+        # lineJoin("round")
         self.w.draw_preview_glyph()
-
-    # @objc.python_method
-    # def inactiveLayerForeground(self, layer):
-    #     NSColor.selectedTextColor().set()
-    #     if layer.paths:
-    #         layer.bezierPath.fill()
-    #     if layer.components:
-    #         NSColor.findHighlightColor().set()
-    #         for component in layer.components:
-    #             component.bezierPath.fill()
-
-    # @objc.python_method
-    # def preview(self, layer):
-    #     NSColor.textColor().set()
-    #     if layer.paths:
-    #         layer.bezierPath.fill()
-    #     if layer.components:
-    #         NSColor.highlightColor().set()
-    #         for component in layer.components:
-    #             component.bezierPath.fill()
+        # restore()
 
     @objc.python_method
     def window_will_close(self):
