@@ -34,20 +34,12 @@ class NibSimulator(ReporterPlugin):
     def foreground(self, layer):
         if self.w is None:
             return
-        save()
-        p = self.w.nib_pen(
-            self.w.font,
-            self.w.angle,
-            self.w.width,
-            self.w.height,
-            self.w._draw_nib_faces,
-            nib_superness=self.w.superness,
-        )
+
         if hasattr(layer.background, "draw"):
-            layer.background.draw(p)
+            self.w.guide_layer = layer.background
         else:
-            layer.draw(p)
-        restore()
+            self.w.guide_layer = layer
+        self.w.draw_preview_glyph()
 
     # @objc.python_method
     # def inactiveLayerForeground(self, layer):
