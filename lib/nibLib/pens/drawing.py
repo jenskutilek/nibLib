@@ -27,5 +27,5 @@ def draw_path(path: Sequence[Sequence[TPoint]] | None, width=1.0) -> None:
             subpath.lineToPoint_(p[0])
 
     subpath.closePath()
-    NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0, 1, 1).set()
+    NSColor.colorWithCalibratedRed_green_blue_alpha_(0, 0.2, 1, 0.5).set()
     subpath.stroke()
