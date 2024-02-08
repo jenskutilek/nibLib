@@ -22,8 +22,6 @@ Nib simulation library for font editors (well, Glyphs and RoboFont at the moment
 
 Use the provided `NibSimulator.glyphsReporter.zip` from the [latest release](https://github.com/jenskutilek/nibLib/releases). Unzip, then double-click the `NibSimulator.glyphsReporter` file to install it into Glyphs.
 
-**The release version only supports Glyphs on Apple Silicon.** If you need it to run on Intel machines, refer to the _Developer Installation_ below. The problem is that the included `pyclipper` binaries are only compiled for ARM processors. The rest of the code is architecture-independent.
-
 #### Developer Installation
 
 You need to install the required Python modules, as the `NibSimulator.glyphsReporter` in the repository does not contain them:
@@ -60,7 +58,5 @@ path in the bottom-most layer as a guide path.
 ## Known bugs
 
 * This is a development version, everything may be broken.
-* Only the rectangular nib will trace outlines using lines and curves, the other modes
-  currently only produce line segments.
 * The "Ellipse" nib is broken, but you can use the Superellipse with a superness setting
   of 2.0 instead.
