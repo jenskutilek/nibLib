@@ -19,15 +19,7 @@ class JKNibGlyphs(JKNib):
         pass
 
     def getLayerList(self) -> List[str]:
-        if self.font is None:
-            return []
-
-        master_id = self.glyph.master.id
-        return [
-            layer.name
-            for layer in self.glyph.parent.layers
-            if layer.associatedMasterId == master_id
-        ]
+        return ["nib", "background"]
 
     def _update_current_glyph_view(self) -> None:
         # Make sure the current view gets redrawn
@@ -39,18 +31,30 @@ class JKNibGlyphs(JKNib):
         """
         Set self.guide_layer to the actual layer object.
         """
-        print(f"  _set_guide_layer: {name}")
+        if name == "background":
+            # Use the current background
+            if hasattr(self.glyph, "background"):
+                self.guide_layer = self.glyph.background
+            else:
+                self.guide_layer = self.glyph
+            return
+
+        # print(f"  _set_guide_layer: {name}")
         mid = self.glyph.master.id
-        print(f"    Looking in master: {self.glyph.master}")
+        # print(f"    Looking in master: {self.glyph.master}")
+        found = False
         for layer in self.glyph.parent.layers:
             if name == layer.name and layer.associatedMasterId == mid:
                 self.guide_layer = layer
+                found = True
                 break
+        if not found:
+            self.guide_layer = None
 
     def draw_preview_glyph(self, preview=False, scale=1.0) -> None:
         if self.guide_layer_name is None:
-            self._update_layers()
             return
+
         # save()
         # TODO: Reuse pen object.
         # Needs modifications to the pens before possible.
@@ -63,13 +67,17 @@ class JKNibGlyphs(JKNib):
             nib_superness=self.superness,
         )
         p._scale = scale
-        self.guide_layer.draw(p)
+
+        try:
+            self.guide_layer.draw(p)
+        except AttributeError:
+            pass
         # restore()
 
     def _trace_callback(self, sender) -> None:
         if self.guide_layer_name is None:
-            self._update_layers()
             return
+
         p = self.nib_pen(
             self.font,
             self.angle,
@@ -79,5 +87,12 @@ class JKNibGlyphs(JKNib):
             nib_superness=self.superness,
             trace=True,
         )
-        self.guide_layer.draw(p)
-        p.trace_path(self.glyph)
+
+        if self.guide_layer is None:
+            return
+
+        try:
+            self.guide_layer.draw(p)
+            p.trace_path(self.glyph)
+        except AttributeError:
+            pass

@@ -117,7 +117,7 @@ class JKNib(BaseWindowController):
         self.w.guide_select = vanilla.PopUpButton(
             (col, y, -48, 20),
             [],
-            # callback=self._guide_select_callback,
+            callback=self._guide_select_callback,
         )
 
         y += 32
