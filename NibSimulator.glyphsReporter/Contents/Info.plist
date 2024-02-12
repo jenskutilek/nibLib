@@ -13,9 +13,9 @@
 	<key>CFBundleName</key>
 	<string>NibSimulator</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string> <!-- 1.0 -->
+	<string>1.2</string> <!-- 1.0 -->
 	<key>CFBundleVersion</key>
-	<string>2</string> <!-- 123 -->
+	<string>3</string> <!-- 123 -->
 	<!--<key>UpdateFeedURL</key>
 	<string>____OnlineUrlToThisPlist____</string>
 	<key>productPageURL</key>
