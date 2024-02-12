@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import objc
+from AppKit import NSClassFromString
 from GlyphsApp import *
 from GlyphsApp.plugins import *
 from GlyphsApp.drawingTools import *
@@ -39,7 +40,17 @@ class NibSimulator(ReporterPlugin):
         if layer != self.w.glyph:
             self.w.glyph = layer
 
-        self.w.draw_preview_glyph(scale=self.getScale())
+        currentController = self.controller.view().window().windowController()
+        if currentController:
+            tool = currentController.toolDrawDelegate()
+            if not (
+                tool.isKindOfClass_(NSClassFromString("GlyphsToolText"))
+                or tool.isKindOfClass_(NSClassFromString("GlyphsToolHand"))
+                or tool.isKindOfClass_(
+                    NSClassFromString("GlyphsToolTrueTypeInstructor")
+                )
+            ):
+                self.w.draw_preview_glyph(scale=self.getScale())
 
     @objc.python_method
     def window_will_close(self):
