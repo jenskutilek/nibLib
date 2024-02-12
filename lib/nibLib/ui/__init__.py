@@ -307,8 +307,9 @@ class JKNib(BaseWindowController):
             self.w.guide_select.setItem(None)
             self.guide_layer = None
         else:
-            self.w.guide_select.setItem(self._guide_layer_name)
-            self._set_guide_layer(self._guide_layer_name)
+            if self.w.guide_select.getItem() != self._guide_layer_name:
+                self.w.guide_select.setItem(self._guide_layer_name)
+                self._set_guide_layer(self._guide_layer_name)
         self._update_current_glyph_view()
 
     def _set_guide_layer(self, name: str) -> None:
