@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from GlyphsApp import Glyphs
+from GlyphsApp import Glyphs, GSBackgroundLayer
 
 # from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
@@ -33,15 +33,15 @@ class JKNibGlyphs(JKNib):
         """
         if name == "background":
             # Use the current background
-            if hasattr(self.glyph, "background"):
-                self.guide_layer = self.glyph.background
-            else:
+            if isinstance(self.glyph, GSBackgroundLayer):
+                # print("Using the layer itself as it seems to be a background layer")
                 self.guide_layer = self.glyph
+            else:
+                # print("Using the background of the current layer")
+                self.guide_layer = self.glyph.background
             return
 
-        # print(f"  _set_guide_layer: {name}")
         mid = self.glyph.master.id
-        # print(f"    Looking in master: {self.glyph.master}")
         found = False
         for layer in self.glyph.parent.layers:
             if name == layer.name and layer.associatedMasterId == mid:
@@ -52,7 +52,7 @@ class JKNibGlyphs(JKNib):
             self.guide_layer = None
 
     def draw_preview_glyph(self, preview=False, scale=1.0) -> None:
-        if self.guide_layer_name is None:
+        if self.guide_layer is None:
             return
 
         # save()
@@ -71,11 +71,12 @@ class JKNibGlyphs(JKNib):
         try:
             self.guide_layer.draw(p)
         except AttributeError:
+            print("AttributeError", self.guide_layer)
             pass
         # restore()
 
     def _trace_callback(self, sender) -> None:
-        if self.guide_layer_name is None:
+        if self.guide_layer is None:
             return
 
         p = self.nib_pen(
@@ -87,9 +88,6 @@ class JKNibGlyphs(JKNib):
             nib_superness=self.superness,
             trace=True,
         )
-
-        if self.guide_layer is None:
-            return
 
         try:
             self.guide_layer.draw(p)
