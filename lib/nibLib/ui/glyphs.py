@@ -23,6 +23,10 @@ class JKNibGlyphs(JKNib):
 
     def _update_current_glyph_view(self) -> None:
         # Make sure the current view gets redrawn
+        if not Glyphs.font:
+            # No font, no redraw
+            return
+
         currentTabView = Glyphs.font.currentTab
         if currentTabView:
             currentTabView.graphicView().setNeedsDisplay_(True)
