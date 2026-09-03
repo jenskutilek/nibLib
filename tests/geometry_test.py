@@ -14,3 +14,7 @@ class GeometryTest(TestCase):
                 (100.0, 100.0),
             ),
         ]
+
+    def test_getPathFromPoints_empty(self):
+        pts = [(100, 100), (100, 100)]
+        assert getPathFromPoints(pts) == []
