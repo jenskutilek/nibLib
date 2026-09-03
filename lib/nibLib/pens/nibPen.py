@@ -1,7 +1,6 @@
-from __future__ import annotations
-
+# noqa: N999
+from collections.abc import Sequence
 from math import pi
-from typing import Sequence
 
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
@@ -86,14 +85,17 @@ class NibPen(BasePen):
     def setup_nib(self) -> None:
         pass
 
-    def addComponent(self, baseName: str, transformation: Transform) -> None:
+    def addComponent(
+        self,
+        glyphName: str,
+        transformation: tuple[float, float, float, float, float, float],
+    ) -> None:
         """Components are ignored.
 
         Args:
             baseName (str): The base glyph name of the component.
             transformation (Transform): The component's transformation.
         """
-        pass
 
     def addPath(self, path: Sequence[Sequence[TPoint]] | None = None) -> None:
         """

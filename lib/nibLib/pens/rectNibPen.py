@@ -1,7 +1,6 @@
-from __future__ import annotations
+# noqa: N999
 
 from math import atan2, pi
-from typing import Tuple
 
 from nibLib.pens.bezier import normalize_quadrant, split_at_extrema
 from nibLib.pens.nibPen import NibPen
@@ -21,7 +20,7 @@ class RectNibPen(NibPen):
             pt[1] - self.b,
         )
 
-    def transformedRect(self, P: TPoint) -> Tuple[TPoint, TPoint, TPoint, TPoint]:
+    def transformedRect(self, P: TPoint) -> tuple[TPoint, TPoint, TPoint, TPoint]:
         """
         Transform a point to a rect describing the four points of the nib face.
 
@@ -95,7 +94,7 @@ class RectNibPen(NibPen):
             self._currentPoint, pt1, pt2, pt3, transform=self.transform
         )
         for segment in segments:
-            pt0, pt1, pt2, pt3 = segment
+            _pt0, pt1, pt2, pt3 = segment
             self._curveToOneNoExtrema(pt1, pt2, pt3)
 
     def _curveToOneNoExtrema(self, pt1, pt2, pt3):

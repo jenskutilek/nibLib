@@ -1,7 +1,6 @@
-from __future__ import annotations
-
+# noqa: N999
 from math import degrees, radians
-from typing import Any, List
+from typing import Any
 
 import vanilla
 from defconAppKit.windows.baseWindow import BaseWindowController
@@ -68,7 +67,7 @@ class JKNib(BaseWindowController):
             stopOnTickMarks=False,
         )
         self.w.angle_text = vanilla.TextBox(
-            (-40, y, -8, 20), "%i" % int(round(degrees(self.angle)))
+            (-40, y, -8, 20), str(round(degrees(self.angle)))
         )
 
         y += 24
@@ -83,7 +82,7 @@ class JKNib(BaseWindowController):
             callback=self._nib_width_callback,
             # stopOnTickMarks=False,
         )
-        self.w.width_text = vanilla.TextBox((-40, y, -8, 20), "%i" % self.width)
+        self.w.width_text = vanilla.TextBox((-40, y, -8, 20), str(self.width))
 
         y += 24
 
@@ -97,7 +96,7 @@ class JKNib(BaseWindowController):
             callback=self._nib_height_callback,
             # stopOnTickMarks=False,
         )
-        self.w.height_text = vanilla.TextBox((-40, y, -8, 20), "%i" % self.height)
+        self.w.height_text = vanilla.TextBox((-40, y, -8, 20), str(self.height))
 
         y += 24
 
@@ -110,7 +109,7 @@ class JKNib(BaseWindowController):
             callback=self._nib_superness_callback,
         )
         self.w.superness_text = vanilla.TextBox(
-            (-40, y, -8, 20), "%0.2f" % self.superness
+            (-40, y, -8, 20), f"{self.superness:0.2f}"
         )
 
         y += 32
@@ -249,11 +248,11 @@ class JKNib(BaseWindowController):
                 self.w.guide_select.set(last_layer)
                 self.guide_layer_name = self.font_layers[last_layer]
 
-    def getLayerList(self) -> List[str]:
+    def getLayerList(self) -> list[str]:
         """Return a list of layer names. The user can choose the guide layer from those.
 
         Returns:
-            List[str]: The list of layer names.
+            list[str]: The list of layer names.
         """
         return []
 
@@ -266,16 +265,16 @@ class JKNib(BaseWindowController):
         if self.model in nib_models:
             self.nib_pen = nib_models[self.model]
         else:
-            self.nib_pen = nib_models[list(nib_models.keys())[0]]
+            self.nib_pen = nib_models[next(iter(nib_models.keys()))]
         self.w.angle_slider.set(degrees(self.angle))
-        self.w.angle_text.set("%i" % int(round(degrees(self.angle))))
+        self.w.angle_text.set(str(round(degrees(self.angle))))
         self.w.width_slider.set(self.width)
-        self.w.width_text.set("%i" % self.width)
+        self.w.width_text.set(str(self.width))
         self.w.width_slider.setMinValue(self.height + 1)
         self.w.height_slider.set(self.height)
-        self.w.height_text.set("%i" % self.height)
+        self.w.height_text.set(str(self.height))
         self.w.height_slider.set(self.height)
-        self.w.superness_text.set("%0.2f" % self.superness)
+        self.w.superness_text.set(f"{self.superness:0.2f}")
         self.w.superness_slider.set(self.superness)
         if self.font is None:
             self.w.guide_select.setItems([])
@@ -334,20 +333,20 @@ class JKNib(BaseWindowController):
         self._update_current_glyph_view()
 
     def _nib_angle_callback(self, sender) -> None:
-        angle = int(round(sender.get()))
+        angle = round(sender.get())
         self.angle = radians(angle)
-        self.w.angle_text.set("%i" % angle)
+        self.w.angle_text.set(str(angle))
         self._update_current_glyph_view()
 
     def _nib_width_callback(self, sender) -> None:
-        self.width = int(round(sender.get()))
-        self.w.width_text.set("%i" % self.width)
+        self.width = round(sender.get())
+        self.w.width_text.set(str(self.width))
         self.w.height_slider.setMaxValue(self.width)
         self._update_current_glyph_view()
 
     def _nib_height_callback(self, sender) -> None:
-        self.height = int(round(sender.get()))
-        self.w.height_text.set("%i" % self.height)
+        self.height = round(sender.get())
+        self.w.height_text.set(str(self.height))
         self.w.width_slider.setMinValue(self.height)
         self._update_current_glyph_view()
 
@@ -357,7 +356,7 @@ class JKNib(BaseWindowController):
             self.superness = 6 + (s - 6) ** 2
         else:
             self.superness = s
-        self.w.superness_text.set("%0.1f" % s)
+        self.w.superness_text.set(f"{s:0.1f}")
         self._update_current_glyph_view()
 
     def _glyph_local_callback(self, sender) -> None:
@@ -413,9 +412,8 @@ class JKNib(BaseWindowController):
 
         lib = getattr(font_or_glyph, self.settings_attr)
         value = lib.get(libkey, None)
-        if attr is not None:
-            if value is not None:
-                setattr(self, attr, value)
+        if attr is not None and value is not None:
+            setattr(self, attr, value)
         # print("load:", libkey, value)
         return value
 

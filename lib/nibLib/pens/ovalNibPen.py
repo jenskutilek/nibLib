@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+# noqa: N999
 from math import atan2, cos, degrees, sin, tan
 
 # from nibLib import DEBUG_CENTER_POINTS, DEBUG_CURVE_POINTS

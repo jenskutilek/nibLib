@@ -1,4 +1,2 @@
-from typing import Tuple, TypeAlias
-
-TPoint: TypeAlias = Tuple[float, float]
-CCurve: TypeAlias = Tuple[TPoint, TPoint, TPoint, TPoint]
+TPoint = tuple[float, float]
+CCurve = tuple[TPoint, TPoint, TPoint, TPoint]

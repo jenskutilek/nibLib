@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import List
-
 from GlyphsApp import Glyphs, GSBackgroundLayer
 
 # from GlyphsApp.drawingTools import *
@@ -19,7 +15,7 @@ class JKNibGlyphs(JKNib):
     def envSpecificQuit(self) -> None:
         pass
 
-    def getLayerList(self) -> List[str]:
+    def getLayerList(self) -> list[str]:
         return ["nib", "background"]
 
     def _update_current_glyph_view(self) -> None:
@@ -77,7 +73,6 @@ class JKNibGlyphs(JKNib):
             self.guide_layer.draw(p)
         except AttributeError:
             print("AttributeError", self.guide_layer)
-            pass
         # restore()
 
     def _trace_callback(self, sender) -> None:

@@ -1,4 +1,4 @@
-from __future__ import annotations
+# noqa: N999
 
 import operator
 from math import cos, degrees, pi, sin
@@ -41,7 +41,6 @@ class SuperellipseNibPen(OvalNibPen):
             points = optimizePointPath(points, 0.02)
         except:
             print("Error optimizing point path.")
-            pass
 
         # Just add the remaining three quarters by transposing the existing points
         points.extend([(-x, y) for x, y in reversed(points)])

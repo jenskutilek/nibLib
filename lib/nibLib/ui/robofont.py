@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import Any, List
-
 # RoboFont-internal packages
 # from lib.tools.extremePoints import ExtremePointPen
 # from math import degrees
@@ -65,7 +61,7 @@ class JKNibRoboFont(JKNib):
     settings_attr = "lib"
 
     def __init__(self) -> None:
-        super(JKNibRoboFont, self).__init__(CurrentGlyph(), CurrentFont())
+        super().__init__(CurrentGlyph(), CurrentFont())
 
     def envSpecificInit(self) -> None:
         self.setUpBaseWindowBehavior()
@@ -86,11 +82,11 @@ class JKNibRoboFont(JKNib):
         if self.w.draw_space.get():
             removeObserver(self, "spaceCenterDraw")
 
-    def getLayerList(self) -> List[str]:
+    def getLayerList(self) -> list[str]:
         """Return a list of layer names. The user can choose the guide layer from those.
 
         Returns:
-            List[str]: The list of layer names.
+            list[str]: The list of layer names.
         """
         return ["foreground"] + self.font.layerOrder
 

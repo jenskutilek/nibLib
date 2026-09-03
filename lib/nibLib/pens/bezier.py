@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import List, Tuple
-
 from fontTools.misc.bezierTools import (
     calcCubicParameters,
     epsilon,
@@ -25,7 +21,7 @@ def normalize_quadrant(q: float) -> float:
 
 def split_at_extrema(
     pt1: TPoint, pt2: TPoint, pt3: TPoint, pt4: TPoint, transform=Transform()
-) -> List[Tuple[TPoint, TPoint, TPoint, TPoint]]:
+) -> list[tuple[TPoint, TPoint, TPoint, TPoint]]:
     """
     Add extrema to a cubic curve, after applying a transformation.
     Example ::

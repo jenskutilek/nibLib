@@ -1,8 +1,6 @@
-from __future__ import annotations
-
+from collections.abc import Sequence
 from functools import cached_property
 from math import atan2, sqrt
-from typing import List, Sequence, Tuple
 
 from beziers.path import BezierPath as SCBezierPath
 from beziers.point import Point as SCPoint
@@ -12,7 +10,7 @@ from fontTools.misc.bezierTools import calcCubicArcLength
 from nibLib.typing import CCurve, TPoint
 
 
-def getPointsFromCurve(p: CCurve, div=0.75) -> List[TPoint]:
+def getPointsFromCurve(p: CCurve, div=0.75) -> list[TPoint]:
     """Return a list of points for the given cubic curve segment.
 
     Args:
@@ -20,7 +18,7 @@ def getPointsFromCurve(p: CCurve, div=0.75) -> List[TPoint]:
         div (float, optional): The dividend to be used to split the curve. Defaults to 0.75.
 
     Returns:
-        List[TPoint]: The list of points.
+        list[TPoint]: The list of points.
     """
     points = []
     length = calcCubicArcLength(p[0], p[1], p[2], p[3])
@@ -34,14 +32,14 @@ def getPointsFromCurve(p: CCurve, div=0.75) -> List[TPoint]:
     return points
 
 
-def getPathFromPoints(points: Sequence[TPoint]) -> List[Tuple[TPoint, ...]]:
+def getPathFromPoints(points: Sequence[TPoint]) -> list[tuple[TPoint, ...]]:
     """Return a path with lines and curves from a sequence of points.
 
     Args:
         points (Sequence[TPoint]): The list of points.
 
     Returns:
-        List[Tuple[TPoint, ...]]: The path.
+        list[tuple[TPoint, ...]]: The path.
     """
     curve_points = SCBezierPath().fromPoints(
         [SCPoint(x, y) for x, y in points],
@@ -51,7 +49,7 @@ def getPathFromPoints(points: Sequence[TPoint]) -> List[Tuple[TPoint, ...]]:
     )
 
     # Reconvert Simon's BezierPath segments to our segment type
-    curves: List[Tuple[TPoint, ...]] = []
+    curves: list[tuple[TPoint, ...]] = []
     first = True
     for segment in curve_points.asSegments():
         if first:
@@ -116,7 +114,7 @@ def halfPoint(p0: TPoint, p1: TPoint, doRound=False) -> TPoint:
     return xh, yh
 
 
-class Triangle(object):
+class Triangle:
     """
     A triangle with points A, B, C; sides a, b, c; angles α, β, γ.
 
@@ -142,11 +140,11 @@ class Triangle(object):
         self.C = C
 
     @cached_property
-    def sides(self) -> Tuple[float, float, float]:
+    def sides(self) -> tuple[float, float, float]:
         """Return the lengths of the three sides of the triangle.
 
         Returns:
-            Tuple[float, float, float]: The lengths of the sides a, b, c.
+            tuple[float, float, float]: The lengths of the sides a, b, c.
         """
         self.a = distanceBetweenPoints(self.B, self.C)
         self.b = distanceBetweenPoints(self.A, self.C)
@@ -166,7 +164,7 @@ class Triangle(object):
         return h
 
 
-def optimizePointPath(p: Sequence[TPoint], dist=0.49) -> List[TPoint]:
+def optimizePointPath(p: Sequence[TPoint], dist=0.49) -> list[TPoint]:
     """Return an optimized version of a list of points. A points will be skipped unless
     its distance from the line formed by its previous to its next point is greater than
     `dist`.
