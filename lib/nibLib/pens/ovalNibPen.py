@@ -88,6 +88,8 @@ class OvalNibPen(RectNibPen):
 
         # Break curve into line segments
         points = getPointsFromCurve((self._currentPoint, pt1, pt2, pt3), 5)
+        if not points:
+            return
 
         # Draw points of center line
         # if DEBUG_CENTER_POINTS:

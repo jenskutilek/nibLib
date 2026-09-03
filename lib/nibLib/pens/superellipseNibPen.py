@@ -124,6 +124,8 @@ class SuperellipseNibPen(OvalNibPen):
 
         # Break curve into line segments
         points = getPointsFromCurve((self._currentPoint, t1, t2, t3), 5)
+        if not points:
+            return
 
         # Draw points of center line
         # if DEBUG_CENTER_POINTS:

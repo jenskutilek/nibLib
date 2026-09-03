@@ -20,8 +20,10 @@ def getPointsFromCurve(p: CCurve, div=0.75) -> list[TPoint]:
     Returns:
         list[TPoint]: The list of points.
     """
-    points = []
+    points: list[TPoint] = []
     length = calcCubicArcLength(p[0], p[1], p[2], p[3])
+    if length == 0:
+        return points
     t = 0
     step = div / length
     # print("Length:", d, "Steps:", step)
