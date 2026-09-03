@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import objc
 from AppKit import NSClassFromString
 from GlyphsApp import Glyphs
-from GlyphsApp.plugins import ReporterPlugin
 from GlyphsApp.drawingTools import *
+from GlyphsApp.plugins import ReporterPlugin
 
 from nibLib.ui.glyphs import JKNibGlyphs
 
