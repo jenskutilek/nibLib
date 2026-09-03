@@ -1,6 +1,6 @@
 [project]
 name = "nibLib"
-version = "0.1.3"
+version = "1.3.0"
 description = "Nib simulation for font editors"
 
 readme = "README.md"
