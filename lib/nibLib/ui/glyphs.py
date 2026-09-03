@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from typing import List
+
 from GlyphsApp import Glyphs, GSBackgroundLayer
 
 # from GlyphsApp.drawingTools import *
 from nibLib.ui import JKNib
-from typing import List
 
 
 class JKNibGlyphs(JKNib):

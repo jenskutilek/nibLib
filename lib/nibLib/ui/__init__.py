@@ -1,20 +1,21 @@
 from __future__ import annotations
 
-import vanilla
-
-from defconAppKit.windows.baseWindow import BaseWindowController
 from math import degrees, radians
+from typing import Any, List
+
+import vanilla
+from defconAppKit.windows.baseWindow import BaseWindowController
+
 from nibLib import (
     def_angle_key,
-    def_width_key,
+    def_guide_key,
     def_height_key,
     def_local_key,
-    def_guide_key,
-    def_super_key,
     def_model_key,
+    def_super_key,
+    def_width_key,
 )
 from nibLib.pens import nib_models
-from typing import Any, List
 
 
 class JKNib(BaseWindowController):

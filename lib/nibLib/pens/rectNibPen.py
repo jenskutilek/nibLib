@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from math import atan2, pi
+from typing import Tuple
+
 from nibLib.pens.bezier import normalize_quadrant, split_at_extrema
 from nibLib.pens.nibPen import NibPen
 from nibLib.typing import TPoint
-from typing import Tuple
 
 
 class RectNibPen(NibPen):

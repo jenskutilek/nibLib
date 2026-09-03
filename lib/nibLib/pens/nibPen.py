@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from math import pi
+from typing import Sequence
+
 from fontTools.misc.transform import Transform
 from fontTools.pens.basePen import BasePen
-from math import pi
+
 from nibLib.pens.drawing import draw_path
 from nibLib.typing import TPoint
-from typing import Sequence
 
 
 class NibPen(BasePen):

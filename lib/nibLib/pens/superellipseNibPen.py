@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import operator
+from math import cos, degrees, pi, sin
 
 from fontTools.misc.transform import Transform
-from math import cos, degrees, pi, sin
-from nibLib.typing import TPoint
+
 from nibLib.geometry import (
     angleBetweenPoints,
     getPathFromPoints,
@@ -12,7 +12,7 @@ from nibLib.geometry import (
     optimizePointPath,
 )
 from nibLib.pens.ovalNibPen import OvalNibPen
-
+from nibLib.typing import TPoint
 
 # Settings for curve trace
 TRACE_ERROR = 0.5

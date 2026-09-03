@@ -1,8 +1,8 @@
+from typing import Sequence
+
 from AppKit import NSBezierPath, NSColor
 
-
 from nibLib.typing import TPoint
-from typing import Sequence
 
 
 def draw_path(path: Sequence[Sequence[TPoint]] | None, width=1.0) -> None:

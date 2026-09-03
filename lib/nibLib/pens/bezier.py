@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+from typing import List, Tuple
+
 from fontTools.misc.bezierTools import (
     calcCubicParameters,
+    epsilon,
     solveQuadratic,
     splitCubicAtT,
-    epsilon,
 )
 from fontTools.misc.transform import Transform
+
 from nibLib.typing import TPoint
-from typing import List, Tuple
 
 
 def normalize_quadrant(q: float) -> float:
@@ -65,7 +67,7 @@ def split_at_extrema(
 
 
 if __name__ == "__main__":
-    import sys
     import doctest
+    import sys
 
     sys.exit(doctest.testmod().failed)

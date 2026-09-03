@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from math import atan2, cos, degrees, sin, tan
-from nibLib.typing import TPoint
-
 
 # from nibLib import DEBUG_CENTER_POINTS, DEBUG_CURVE_POINTS
 from nibLib.geometry import (
@@ -11,6 +9,7 @@ from nibLib.geometry import (
     optimizePointPath,
 )
 from nibLib.pens.rectNibPen import RectNibPen
+from nibLib.typing import TPoint
 
 
 class OvalNibPen(RectNibPen):
@@ -141,7 +140,6 @@ class OvalNibPen(RectNibPen):
             #     restore()
 
         if inner and outer:
-
             inner = optimizePointPath(inner, 0.3)
             outer = optimizePointPath(outer, 0.3)
 

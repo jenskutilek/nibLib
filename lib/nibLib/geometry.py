@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from functools import cached_property
+from math import atan2, sqrt
+from typing import List, Sequence, Tuple
+
 from beziers.path import BezierPath as SCBezierPath
 from beziers.point import Point as SCPoint
 from fontPens.penTools import getCubicPoint
 from fontTools.misc.bezierTools import calcCubicArcLength
-from functools import cached_property
-from math import atan2, sqrt
+
 from nibLib.typing import CCurve, TPoint
-from typing import List, Sequence, Tuple
 
 
 def getPointsFromCurve(p: CCurve, div=0.75) -> List[TPoint]:

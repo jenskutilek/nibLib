@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from typing import Any, List
+
 # RoboFont-internal packages
 # from lib.tools.extremePoints import ExtremePointPen
 # from math import degrees
-from mojo.drawingTools import fill, lineJoin, restore, save, strokeWidth, stroke
+from mojo.drawingTools import fill, lineJoin, restore, save, stroke, strokeWidth
 from mojo.events import addObserver, removeObserver
 from mojo.roboFont import CurrentFont, CurrentGlyph, RGlyph
 from mojo.UI import UpdateCurrentGlyphView
-from nibLib.ui import JKNib
+
 from nibLib import DEBUG, rf_guide_key
-from typing import Any, List
+from nibLib.ui import JKNib
 
 
 def NibGuideGlyphFactory(glyph, font, angle: float):
@@ -29,7 +31,7 @@ def _registerFactory():
     # From https://github.com/typesupply/glyph-nanny/blob/master/Glyph%20Nanny.roboFontExt/lib/glyphNanny.py
     # always register if debugging
     # otherwise only register if it isn't registered
-    from defcon import registerRepresentationFactory, Glyph
+    from defcon import Glyph, registerRepresentationFactory
 
     if DEBUG:
         if rf_guide_key in Glyph.representationFactories:
@@ -43,7 +45,7 @@ def _registerFactory():
 
 
 def _unregisterFactory():
-    from defcon import unregisterRepresentationFactory, Glyph
+    from defcon import Glyph, unregisterRepresentationFactory
 
     try:
         unregisterRepresentationFactory(Glyph, rf_guide_key)
