@@ -8,38 +8,19 @@ import cmath
 
 # nib_angle = 5
 
-Variable([
-    dict(name="a", ui="Slider",
-        args=dict(
-            value=300,
-            minValue=0,
-            maxValue=500)),
-    dict(name="b", ui="Slider",
-        args=dict(
-            value=200,
-            minValue=0,
-            maxValue=500)),
-    dict(name="n", ui="Slider",
-        args=dict(
-            value=2.5,
-            minValue=2,
-            maxValue=10)),
-    dict(name="phi", ui="Slider",
-        args=dict(
-            value=45,
-            minValue=0,
-            maxValue=360)),
-    dict(name="alpha", ui="Slider",
-        args=dict(
-            value=45,
-            minValue=0,
-            maxValue=360)),
-    dict(name="nib_angle", ui="Slider",
-        args=dict(
-            value=0,
-            minValue=-90,
-            maxValue=90)),
-    ], globals())
+Variable(
+    [
+        dict(name="a", ui="Slider", args=dict(value=300, minValue=0, maxValue=500)),
+        dict(name="b", ui="Slider", args=dict(value=200, minValue=0, maxValue=500)),
+        dict(name="n", ui="Slider", args=dict(value=2.5, minValue=2, maxValue=10)),
+        dict(name="phi", ui="Slider", args=dict(value=45, minValue=0, maxValue=360)),
+        dict(name="alpha", ui="Slider", args=dict(value=45, minValue=0, maxValue=360)),
+        dict(
+            name="nib_angle", ui="Slider", args=dict(value=0, minValue=-90, maxValue=90)
+        ),
+    ],
+    globals(),
+)
 
 alpha = radians(alpha)
 nib_angle = radians(nib_angle)
@@ -47,6 +28,7 @@ phi = radians(phi)
 
 
 # Path optimization tools
+
 
 def distanceBetweenPoints(p0, p1, doRound=False):
     # Calculate the distance between two points
@@ -72,7 +54,7 @@ class Triangle(object):
     def height_a(self):
         a, b, c = self.sides()
         s = (a + b + c) / 2
-        h = 2 * sqrt(s * (s-a) * (s-b) * (s-c)) / a
+        h = 2 * sqrt(s * (s - a) * (s - b) * (s - c)) / a
         return h
 
 
@@ -83,9 +65,9 @@ def optimizePointPath(p, dist=0.49):
     optimized = [p0]
     i = 0
     j = 1
-    while i < num_points -2:
-        p1 = p[i+1]
-        p2 = p[i+2]
+    while i < num_points - 2:
+        p1 = p[i + 1]
+        p2 = p[i + 2]
         t = Triangle(p0, p2, p1)
         h = t.height_a()
         # print(i, h)
@@ -108,10 +90,12 @@ def get_superellipse_points(a, b, n, alpha=0, steps=100):
     points = []
     for i in range(0, steps + 1):
         t = i * 0.5 * pi / steps
-        points.append((
-            a * cos(t) ** (2 / n) * cos(alpha) - b * sin(t) ** (2 / n) * sin(alpha),
-            a * cos(t) ** (2 / n) * sin(alpha) + b * sin(t) ** (2 / n) * cos(alpha),
-        ))
+        points.append(
+            (
+                a * cos(t) ** (2 / n) * cos(alpha) - b * sin(t) ** (2 / n) * sin(alpha),
+                a * cos(t) ** (2 / n) * sin(alpha) + b * sin(t) ** (2 / n) * cos(alpha),
+            )
+        )
     try:
         points = optimizePointPath(points, 1)
     except:
@@ -120,6 +104,7 @@ def get_superellipse_points(a, b, n, alpha=0, steps=100):
     points.extend([(-p[0], p[1]) for p in reversed(points)])
     points.extend([(-p[0], -p[1]) for p in reversed(points)])
     return points
+
 
 def superellipse(a, b, n, alpha, steps=100):
     points = get_superellipse_points(a, b, n, 0, steps)
@@ -133,6 +118,7 @@ def superellipse(a, b, n, alpha, steps=100):
     drawPath()
     restore()
 
+
 # def _get_point_on_ellipse_at_tangent_angle(a, b, alpha):
 #
 #     phi = atan2(
@@ -144,6 +130,7 @@ def superellipse(a, b, n, alpha, steps=100):
 #     y = b * sin(phi)
 #
 #     return x, y
+
 
 def _get_point_on_superellipse_at_tangent_angle(a, b, n, alpha):
 
@@ -178,15 +165,15 @@ def _get_point_on_superellipse_at_angle_from_center(a, b, n, phi):
 
 
 def draw_arrowhead(size=10, x=0, y=0):
-    line((x-size, y+size), (x, y))
-    line((x, y), (x-size, y-size))
+    line((x - size, y + size), (x, y))
+    line((x, y), (x - size, y - size))
 
 
 def draw_cross(size=10, x=0, y=0, phi=45):
     save()
     rotate(phi)
-    line((x-size, y+size), (x+size, y-size))
-    line((x+size, y+size), (x-size, y-size))
+    line((x - size, y + size), (x + size, y - size))
+    line((x + size, y + size), (x - size, y - size))
     restore()
 
 
@@ -205,7 +192,7 @@ stroke(1, 0, 0)
 line((-500, 0), (500, 0))
 line((0, 500), (0, -500))
 stroke(1, 1, 0)
-oval(-a, -b, 2*a, 2*b)
+oval(-a, -b, 2 * a, 2 * b)
 rotate(degrees(-nib_angle))
 stroke(0)
 strokeWidth(1)
@@ -217,17 +204,17 @@ rotate(degrees(nib_angle))
 stroke(0, 1, 0)
 x, y = _get_point_on_superellipse_at_angle_from_center(a, b, n, phi)
 line((0, 0), (x, y))
-rect(x-1, y-1, 2, 2)
+rect(x - 1, y - 1, 2, 2)
 restore()
 
 stroke(0, 0, 1)
 x, y = _get_point_on_superellipse_at_tangent_angle(a, b, n, alpha - nib_angle)
 print(x, y)
 save()
-stroke(0,1,0)
+stroke(0, 1, 0)
 rotate(degrees(nib_angle))
 line((0, 0), (x, y))
-rect(x-1, y-1, 2, 2)
+rect(x - 1, y - 1, 2, 2)
 restore()
 # print("Nib angle:", degrees(nib_angle))
 
@@ -237,14 +224,14 @@ ynew = x * sin(nib_angle) + y * cos(nib_angle)
 # print(xnew, ynew)
 
 line((0, 0), (xnew, ynew))
-rect(xnew-1, ynew-1, 2, 2)
+rect(xnew - 1, ynew - 1, 2, 2)
 translate(xnew, ynew)
 
 save()
 rotate(degrees(alpha))
 
 line((-300, 0), (300, 0))
-draw_cross(5, phi = degrees(-alpha))
+draw_cross(5, phi=degrees(-alpha))
 draw_arrowhead(5, -300)
 draw_arrowhead(5, 300)
 
